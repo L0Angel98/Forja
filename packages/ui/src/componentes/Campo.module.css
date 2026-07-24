@@ -1,0 +1,47 @@
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-8);
+}
+
+.etiqueta {
+  font-family: var(--fuente-display);
+  font-weight: 600;
+  font-size: var(--texto-sm);
+  color: var(--acero-050);
+}
+
+.entrada {
+  min-height: var(--touch-target-minimo);
+  padding: 0 var(--espacio-16);
+  background: var(--acero-700);
+  color: var(--acero-050);
+  border: 2px solid var(--acero-300);
+  border-radius: var(--radio-control);
+  font-family: var(--fuente-display);
+  font-size: var(--texto-operador);
+}
+
+.entrada::placeholder {
+  color: var(--acero-300);
+}
+
+.entrada:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.entradaInvalida {
+  border-color: var(--andon-rojo);
+}
+
+.ayuda {
+  font-size: var(--texto-sm);
+  color: var(--acero-300);
+}
+
+.error {
+  font-size: var(--texto-sm);
+  color: var(--andon-rojo);
+  font-weight: 600;
+}

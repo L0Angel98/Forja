@@ -1,0 +1,81 @@
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-8);
+  border: 2px solid transparent;
+  border-radius: var(--radio-control);
+  font-family: var(--fuente-display);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Tamaño operador (por defecto): touch target ≥56px, tipografía base operador. */
+.operador {
+  min-height: var(--touch-target-minimo);
+  min-width: var(--touch-target-minimo);
+  padding: 0 var(--espacio-24);
+  font-size: var(--texto-operador);
+}
+
+/* Solo para shells de escritorio (supervisor/admin): más compacto. */
+.compacto {
+  min-height: 40px;
+  padding: 0 var(--espacio-16);
+  font-size: var(--texto-sm);
+}
+
+.primario {
+  background: var(--senal-azul);
+  color: var(--acero-050);
+}
+
+.primario:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--senal-azul) 85%, black);
+}
+
+.secundario {
+  background: transparent;
+  color: var(--acero-050);
+  border-color: var(--acero-300);
+}
+
+.secundario:hover:not(:disabled) {
+  background: var(--acero-700);
+}
+
+.peligro {
+  background: var(--andon-rojo);
+  color: var(--acero-050);
+}
+
+.peligro:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--andon-rojo) 85%, black);
+}
+
+.spinner {
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: girar 0.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
