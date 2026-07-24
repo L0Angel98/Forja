@@ -1,0 +1,69 @@
+.tarjeta {
+  position: relative;
+  display: flex;
+  background: var(--acero-700);
+  border-radius: var(--radio-tarjeta);
+  overflow: hidden;
+}
+
+.franja {
+  width: var(--ancho-franja-andon);
+  flex-shrink: 0;
+  background: var(--andon-ambar);
+}
+
+.contenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-16);
+  padding: var(--espacio-24) var(--espacio-16);
+  flex: 1;
+  min-width: 0;
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--texto-lg);
+  font-weight: 600;
+  color: var(--acero-050);
+}
+
+.resumen {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-8);
+}
+
+.par {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-12);
+}
+
+.etiqueta {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--acero-300);
+}
+
+.valor {
+  margin: 0;
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-sm);
+  color: var(--acero-050);
+  text-align: right;
+}
+
+/*
+ * Corregir y Confirmar apilados con separación amplia (--espacio-48), no
+ * uno junto al otro: un toque accidental con el pulgar no debe poder
+ * alcanzar Confirmar al intentar tocar Corregir. Confirmar además va
+ * después en el DOM y sin autofoco (ver TarjetaConfirmacion.tsx).
+ */
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-48);
+  margin-top: var(--espacio-16);
+}
