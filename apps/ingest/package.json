@@ -8,7 +8,8 @@
     "start": "tsx src/main.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run --exclude '**/__tests__/integration/**'",
+    "test:integration": "vitest run src/__tests__/integration"
   },
   "dependencies": {
     "@forja/core": "workspace:*",
@@ -18,8 +19,10 @@
     "drizzle-orm": "^0.38.4"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "^10.28.0",
     "@types/node": "^22.10.5",
     "mqtt": "^5.15.2",
+    "testcontainers": "^10.28.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "vitest": "^3.0.4"
