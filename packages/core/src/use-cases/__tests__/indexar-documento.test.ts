@@ -46,7 +46,7 @@ function construir() {
   return {
     documentos,
     almacen,
-    extractor: crearExtractorTextoFalso({ texto: "primer párrafo\n\nsegundo párrafo", totalPaginas: 1 }),
+    extractor: crearExtractorTextoFalso({ texto: "primer párrafo\n\nsegundo párrafo", totalPaginas: 1, paginas: null }),
     selectorEstrategia,
     embeddings: crearGeneradorEmbeddingsFalso(),
     chunks,

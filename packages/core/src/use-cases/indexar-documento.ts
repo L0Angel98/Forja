@@ -32,9 +32,9 @@ export async function indexarDocumento(
 
   try {
     const contenido = await deps.almacen.leer(documento.rutaAlmacenada);
-    const { texto } = await deps.extractor.extraer(contenido, documento.tipoArchivo);
+    const textoExtraido = await deps.extractor.extraer(contenido, documento.tipoArchivo);
     const estrategia = deps.selectorEstrategia.seleccionar(documento.tipoArchivo);
-    const troceados = estrategia.trocear(texto);
+    const troceados = estrategia.trocear(textoExtraido);
 
     const embeddings = troceados.length > 0 ? await deps.embeddings.generar(troceados.map((t) => t.contenido)) : [];
 

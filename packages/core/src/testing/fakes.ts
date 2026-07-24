@@ -444,7 +444,7 @@ export function crearAlmacenArchivosFalso(): AlmacenArchivos & { archivos: Map<s
 }
 
 export function crearExtractorTextoFalso(
-  respuesta: TextoExtraido = { texto: "texto de prueba", totalPaginas: null },
+  respuesta: TextoExtraido = { texto: "texto de prueba", totalPaginas: null, paginas: null },
 ): ExtractorTexto {
   return {
     async extraer() {
