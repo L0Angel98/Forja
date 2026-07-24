@@ -90,17 +90,31 @@ describe("historial de ejecuciones de rutinas (Postgres real)", () => {
   });
 
   it("tokensUsadosDesde suma solo las ejecuciones de esa planta dentro de la ventana", async () => {
+    // Usa una planta propia (no la `plantaId` compartida por el resto del describe)
+    // para no sumar tokens de ejecuciones insertadas por otros tests de este archivo.
     const repo = new RepositorioEjecucionesRutinaDrizzle(db);
-    const [otraPlanta] = await db.insert(plant).values({ nombre: "Otra Planta" }).returning();
+    const [plantaPropia] = await db.insert(plant).values({ nombre: "Planta Presupuesto Test" }).returning();
+    const idPlantaPropia = plantaPropia!.id;
 
     await repo.crear(
-      construirEjecucion({ rutinaNombre: "presupuesto-a", iniciadaEn: new Date("2026-03-01T00:00:00.000Z"), tokensUsados: 100 }),
-    );
-    await repo.crear(
-      construirEjecucion({ rutinaNombre: "presupuesto-b", iniciadaEn: new Date("2026-03-05T00:00:00.000Z"), tokensUsados: 200 }),
+      construirEjecucion({
+        plantId: idPlantaPropia,
+        rutinaNombre: "presupuesto-a",
+        iniciadaEn: new Date("2026-03-01T00:00:00.000Z"),
+        tokensUsados: 100,
+      }),
     );
     await repo.crear(
       construirEjecucion({
+        plantId: idPlantaPropia,
+        rutinaNombre: "presupuesto-b",
+        iniciadaEn: new Date("2026-03-05T00:00:00.000Z"),
+        tokensUsados: 200,
+      }),
+    );
+    await repo.crear(
+      construirEjecucion({
+        plantId: idPlantaPropia,
         rutinaNombre: "presupuesto-vieja",
         iniciadaEn: new Date("2026-01-01T00:00:00.000Z"),
         tokensUsados: 9999,
@@ -109,13 +123,13 @@ describe("historial de ejecuciones de rutinas (Postgres real)", () => {
     await repo.crear(
       construirEjecucion({
         rutinaNombre: "presupuesto-otra-planta",
-        plantId: otraPlanta!.id,
+        plantId: plantaId,
         iniciadaEn: new Date("2026-03-02T00:00:00.000Z"),
         tokensUsados: 5000,
       }),
     );
 
-    const total = await repo.tokensUsadosDesde(plantaId, new Date("2026-02-01T00:00:00.000Z"));
+    const total = await repo.tokensUsadosDesde(idPlantaPropia, new Date("2026-02-01T00:00:00.000Z"));
     expect(total).toBe(300);
   });
 
