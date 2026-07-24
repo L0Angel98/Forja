@@ -9,7 +9,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "eval:fallas": "tsx scripts/eval-crear-reporte-falla.ts"
+    "eval:fallas": "tsx scripts/eval-crear-reporte-falla.ts",
+    "eval:documentos": "tsx scripts/eval-buscar-documentos.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
