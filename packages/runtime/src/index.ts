@@ -12,3 +12,5 @@ export * from "./rutinas/registro-canales-salida";
 export * from "./rutinas/enviador-ui-noop";
 export * from "./rutinas/enviador-webhook-http";
 export * from "./rutinas/enviador-correo-no-configurado";
+export * from "./rutinas/cargar-rutinas-desde-directorio";
+export * from "./rutinas/programador-rutinas";
