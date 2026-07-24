@@ -53,7 +53,8 @@ function construirClienteGoogleCalendar(config: ConectorConfigurado): ClienteGoo
   return new ClienteGoogleCalendarOAuth({ clientId, clientSecret, refreshToken });
 }
 
-function construirEnviadorCorreo(config: ConectorConfigurado): EnviadorCorreo {
+/** Exportado para que la composición del server pueda reusar la misma resolución de credenciales al armar el canal "correo" de rutinas (spec 16). */
+export function construirEnviadorCorreo(config: ConectorConfigurado): EnviadorCorreo {
   const host = leerEnvCredencial(config, "host");
   const user = leerEnvCredencial(config, "user");
   const password = leerEnvCredencial(config, "password");

@@ -1,6 +1,7 @@
-# Conectores externos activos (servidores MCP) y qué roles pueden usar cada
-# herramienta que exponen. La spec 17 agrega el loader que lee este archivo;
-# hasta entonces es solo el formato de referencia.
+# Conectores externos activos (servidores MCP in-process, spec 17) y qué
+# roles pueden usar cada herramienta que exponen. `credenciales` nunca
+# lleva el secreto: cada valor es el NOMBRE de una variable de entorno
+# (un valor que no se vea como nombre de variable se rechaza al cargar).
 #
 # conectores:
 #   - nombre: google-calendar
@@ -8,9 +9,26 @@
 #     permisos:
 #       crear_evento: [supervisor, admin]
 #       consultar_disponibilidad: [operador, supervisor, admin]
+#     credenciales:
+#       client_id: GOOGLE_CALENDAR_CLIENT_ID
+#       client_secret: GOOGLE_CALENDAR_CLIENT_SECRET
+#       refresh_token: GOOGLE_CALENDAR_REFRESH_TOKEN
 #   - nombre: correo-smtp
 #     activo: false
 #     permisos:
 #       enviar_correo: [supervisor, admin]
+#     credenciales:
+#       host: SMTP_HOST
+#       port: SMTP_PORT
+#       secure: SMTP_SECURE
+#       user: SMTP_USER
+#       password: SMTP_PASSWORD
+#       from: SMTP_FROM
+#   - nombre: webhook
+#     activo: false
+#     permisos:
+#       llamar_webhook: [admin]
+#     lista_blanca_urls:
+#       - https://ejemplo.com/hook
 
 conectores: []

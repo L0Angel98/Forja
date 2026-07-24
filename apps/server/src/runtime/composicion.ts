@@ -1,9 +1,12 @@
 import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
 import path from "node:path";
 import type {
   AlmacenArchivos,
   BusEventos as TipoBusEventos,
   ColaTrabajos,
+  ConectorActivo,
+  ConectorConfigurado,
   EscritorMemoria,
   EscritorArchivosRutinas,
   EscritorArchivosWorkspace,
@@ -30,7 +33,14 @@ import type {
   RepositorioSugerenciasMemoria,
   SelectorEstrategiaChunking,
 } from "@forja/core";
-import { BusEventos, registrarManejadoresFalla } from "@forja/core";
+import { BusEventos, parsearConectoresYaml, registrarManejadoresFalla } from "@forja/core";
+import {
+  CanalSalidaEnviadorCorreoSmtp,
+  construirEnviadorCorreo,
+  crearConectores,
+  NOMBRE_CONECTOR_CORREO_SMTP,
+  type EstadoConectorInfo,
+} from "@forja/connectors";
 import type { ForjaDb } from "@forja/db";
 import {
   RegistradorTraceDrizzle,
@@ -90,6 +100,13 @@ const MODELO_ANTHROPIC_POR_DEFECTO = "claude-3-5-sonnet-latest";
 const MODELO_EMBEDDINGS_OPENAI_POR_DEFECTO = "text-embedding-3-small";
 const PRESUPUESTO_MAXIMO_POR_EJECUCION_POR_DEFECTO = 100_000;
 const PRESUPUESTO_MENSUAL_GLOBAL_POR_DEFECTO = 2_000_000;
+const CONFIG_CORREO_SMTP_POR_DEFECTO: ConectorConfigurado = {
+  nombre: NOMBRE_CONECTOR_CORREO_SMTP,
+  activo: false,
+  permisos: {},
+  credenciales: {},
+  listaBlancaUrls: [],
+};
 
 export interface ComposicionRuntime {
   plantId: string;
@@ -128,6 +145,11 @@ export interface ComposicionRuntime {
   canalesSalida: RegistroCanalesSalida;
   programadorRutinas: ProgramadorRutinas;
   presupuestoMaximoPorEjecucion: number;
+  conectores: {
+    obtenerEstados(): readonly EstadoConectorInfo[];
+    obtener(nombreConector: string): ConectorActivo | undefined;
+  };
+  cerrarConectores: () => Promise<void>;
 }
 
 function construirProveedorLLM(): ProveedorLLM {
@@ -201,6 +223,57 @@ export async function construirComposicionRuntime(
   canalesSalida.registrar("webhook", new EnviadorWebhookHttp());
   canalesSalida.registrar("correo", new EnviadorCorreoNoConfigurado());
 
+  let estadosConectoresActuales: EstadoConectorInfo[] = [];
+  let registroConectoresActivosActual: { obtener(nombreConector: string): ConectorActivo | undefined } = {
+    obtener: () => undefined,
+  };
+  let nombresHerramientasConectorActuales: string[] = [];
+  let cerrarConectoresActuales: () => Promise<void> = async () => {};
+
+  async function leerConectoresYaml(): Promise<string> {
+    try {
+      return await fs.readFile(path.join(directorioWorkspace, "conectores.yaml"), "utf8");
+    } catch {
+      return "";
+    }
+  }
+
+  /**
+   * Recarga conectores (spec 17), llamada tanto al iniciar como desde el
+   * onRecargar del WorkspaceLoader cuando cambia conectores.yaml (mismo
+   * mecanismo de hot-reload que ya usan las rutinas, spec 16). Un
+   * conectores.yaml con sintaxis/roles inválidos deja la configuración
+   * anterior intacta en vez de tumbar la recarga completa del workspace
+   * (que también recarga soul/planta/memoria/rutinas en el mismo evento);
+   * un conector individual inválido, en cambio, ya lo maneja crearConectores
+   * marcándolo no_disponible sin afectar a los demás.
+   */
+  async function recargarConectores(): Promise<void> {
+    let configuraciones: ConectorConfigurado[];
+    try {
+      configuraciones = parsearConectoresYaml(await leerConectoresYaml());
+    } catch (error) {
+      console.error("conectores.yaml inválido; se mantiene la configuración de conectores anterior.", error);
+      return;
+    }
+
+    await cerrarConectoresActuales();
+    for (const nombre of nombresHerramientasConectorActuales) registroHerramientas.desregistrar(nombre);
+
+    const resultado = await crearConectores(configuraciones);
+    for (const herramienta of resultado.herramientas) registroHerramientas.registrar(herramienta);
+
+    estadosConectoresActuales = [...resultado.estados];
+    registroConectoresActivosActual = resultado.registro;
+    nombresHerramientasConectorActuales = resultado.herramientas.map((h) => h.nombre);
+    cerrarConectoresActuales = () => resultado.cerrarTodos();
+
+    const configCorreo = configuraciones.find((c) => c.nombre === NOMBRE_CONECTOR_CORREO_SMTP) ?? CONFIG_CORREO_SMTP_POR_DEFECTO;
+    canalesSalida.registrar("correo", new CanalSalidaEnviadorCorreoSmtp(construirEnviadorCorreo(configCorreo)));
+  }
+
+  await recargarConectores();
+
   const presupuestoMaximoPorEjecucion = Number(
     process.env["RUTINAS_PRESUPUESTO_MAXIMO_POR_EJECUCION"] ?? PRESUPUESTO_MAXIMO_POR_EJECUCION_POR_DEFECTO,
   );
@@ -230,6 +303,7 @@ export async function construirComposicionRuntime(
     directorio: directorioWorkspace,
     onRecargar: () => {
       void programadorRutinas.recargar();
+      void recargarConectores();
     },
   });
   await programadorRutinas.iniciar();
@@ -271,5 +345,10 @@ export async function construirComposicionRuntime(
     canalesSalida,
     programadorRutinas,
     presupuestoMaximoPorEjecucion,
+    conectores: {
+      obtenerEstados: () => estadosConectoresActuales,
+      obtener: (nombreConector) => registroConectoresActivosActual.obtener(nombreConector),
+    },
+    cerrarConectores: () => cerrarConectoresActuales(),
   };
 }

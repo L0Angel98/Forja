@@ -33,11 +33,13 @@ import {
   crearRepositorioSensoresPorMaquinaFalso,
   crearRepositorioSugerenciasMemoriaFalso,
   crearRepositorioUsuariosMemoria,
+  type ConectorActivo,
   type ConfiguracionWorkspace,
   type EstrategiaChunking,
   type SelectorEstrategiaChunking,
   type Usuario,
 } from "@forja/core";
+import type { EstadoConectorInfo } from "@forja/connectors";
 import { ProgramadorRutinas, RegistroCanalesSalida, RegistroHerramientas, type IWorkspaceLoader } from "@forja/runtime";
 import {
   crearHerramientaBuscarDocumentos,
@@ -101,6 +103,20 @@ function crearSelectorEstrategiaFalso(): SelectorEstrategiaChunking {
   return { seleccionar: () => ESTRATEGIA_FALSA };
 }
 
+function crearConectoresRuntimeFalso(): ComposicionRuntime["conectores"] & {
+  activos: Map<string, ConectorActivo>;
+  estados: EstadoConectorInfo[];
+} {
+  const activos = new Map<string, ConectorActivo>();
+  const estados: EstadoConectorInfo[] = [];
+  return {
+    activos,
+    estados,
+    obtenerEstados: () => estados,
+    obtener: (nombreConector) => activos.get(nombreConector),
+  };
+}
+
 export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   sugerenciasMemoriaRepo: ReturnType<typeof crearRepositorioSugerenciasMemoriaFalso>;
   escritorMemoriaFalso: ReturnType<typeof crearEscritorMemoriaFalso>;
@@ -121,6 +137,7 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   almacenFalso: ReturnType<typeof crearAlmacenArchivosFalso>;
   ejecucionesRutinaRepo: ReturnType<typeof crearRepositorioEjecucionesRutinaFalso>;
   escritorRutinasFalso: ReturnType<typeof crearEscritorArchivosRutinasFalso>;
+  conectoresFalso: ReturnType<typeof crearConectoresRuntimeFalso>;
 } {
   const sugerenciasMemoriaRepo = crearRepositorioSugerenciasMemoriaFalso();
   const escritorMemoriaFalso = crearEscritorMemoriaFalso();
@@ -146,6 +163,7 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   const embeddings = crearGeneradorEmbeddingsFalso();
   const ejecucionesRutinaRepo = crearRepositorioEjecucionesRutinaFalso();
   const escritorRutinasFalso = crearEscritorArchivosRutinasFalso();
+  const conectoresFalso = crearConectoresRuntimeFalso();
   const canalesSalida = new RegistroCanalesSalida();
   canalesSalida.registrar("ui", crearCanalSalidaEnviadorFalso());
   const programadorRutinas = new ProgramadorRutinas({
@@ -213,6 +231,8 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
     agregacionesSensores: agregacionesSensoresRepo,
     estadoIngesta: estadoIngestaRepo,
     almacen: almacenFalso,
+    conectores: conectoresFalso,
+    cerrarConectores: async () => {},
     extractor: crearExtractorTextoFalso(),
     selectorEstrategia: crearSelectorEstrategiaFalso(),
     embeddings,
@@ -244,5 +264,6 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
     almacenFalso,
     ejecucionesRutinaRepo,
     escritorRutinasFalso,
+    conectoresFalso,
   };
 }

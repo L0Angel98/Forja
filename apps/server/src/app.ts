@@ -7,6 +7,7 @@ import { registrarRutasAuth } from "./auth/rutas";
 import { registrarRutasDocumentos } from "./documentos/rutas";
 import type { ComposicionRuntime } from "./runtime/composicion";
 import { registrarRutasRuntime } from "./runtime/rutas";
+import { registrarRutasConectores } from "./conectores/rutas";
 import { registrarRutasFallas } from "./fallas/rutas";
 import { registrarRutasRutinas } from "./rutinas/rutas";
 import { registrarRutasSensores } from "./sensores/rutas";
@@ -33,6 +34,7 @@ export function buildApp(deps: DependenciasApp): FastifyInstance {
   registrarRutasDocumentos(app, deps.auth, deps.runtime);
   registrarRutasSensores(app, deps.auth, deps.runtime);
   registrarRutasRutinas(app, deps.auth, deps.runtime);
+  registrarRutasConectores(app, deps.auth, deps.runtime);
 
   return app;
 }

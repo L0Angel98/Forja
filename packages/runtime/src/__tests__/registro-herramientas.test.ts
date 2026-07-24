@@ -109,6 +109,23 @@ describe("RegistroHerramientas", () => {
     });
   });
 
+  describe("desregistrar", () => {
+    it("quita una herramienta registrada; deja de aparecer y puede volver a registrarse", () => {
+      const registro = new RegistroHerramientas();
+      registro.registrar(herramientaDePrueba({ nombre: "x", rolesPermitidos: ["admin"] }));
+
+      registro.desregistrar("x");
+
+      expect(registro.existe("x")).toBe(false);
+      expect(() => registro.registrar(herramientaDePrueba({ nombre: "x", rolesPermitidos: ["operador"] }))).not.toThrow();
+    });
+
+    it("no falla si la herramienta no estaba registrada (idempotente)", () => {
+      const registro = new RegistroHerramientas();
+      expect(() => registro.desregistrar("no-existe")).not.toThrow();
+    });
+  });
+
   describe("RegistroHerramientas.desde", () => {
     it("construye un registry acotado exactamente a las herramientas dadas", () => {
       const original = new RegistroHerramientas();

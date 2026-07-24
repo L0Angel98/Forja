@@ -23,6 +23,11 @@ export class RegistroHerramientas implements CatalogoHerramientas {
     this.herramientas.set(herramienta.nombre, herramienta);
   }
 
+  /** Idempotente: permite recargar herramientas de conectores (spec 17) sin reiniciar el proceso. */
+  desregistrar(nombre: string): void {
+    this.herramientas.delete(nombre);
+  }
+
   disponiblesPara(rol: Rol): Herramienta[] {
     return [...this.herramientas.values()].filter((h) => h.rolesPermitidos.includes(rol));
   }
