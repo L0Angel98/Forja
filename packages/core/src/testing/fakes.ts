@@ -13,6 +13,19 @@ import type { EscritorArchivosWorkspace } from "../ports/escritor-archivos-works
 import type { TurnoAgente } from "../entities/turno-agente";
 import type { RegistradorTrace } from "../ports/registrador-trace";
 import type { ProveedorLLM, RespuestaProveedorLLM } from "../ports/proveedor-llm";
+import type { Maquina } from "../entities/maquina";
+import type { RepositorioMaquinas } from "../ports/repositorio-maquinas";
+import type { RepositorioAreasUsuario } from "../ports/repositorio-areas-usuario";
+import type { ReporteFalla } from "../entities/falla";
+import type { FiltrosListarFallas, RepositorioFallas } from "../ports/repositorio-fallas";
+import type { SensorInfo, LecturaSensor } from "../entities/sensor";
+import type { RepositorioSensoresPorMaquina } from "../ports/repositorio-sensores-por-maquina";
+import type { RepositorioLecturasVentana } from "../ports/repositorio-lecturas-ventana";
+import type { SnapshotSensor } from "../entities/snapshot-sensor";
+import type { RepositorioSnapshotsFalla } from "../ports/repositorio-snapshots-falla";
+import type { Notificacion } from "../entities/notificacion";
+import type { RepositorioNotificaciones } from "../ports/repositorio-notificaciones";
+import type { ColaTrabajos } from "../ports/cola-trabajos";
 
 export function crearRepositorioUsuariosMemoria(usuariosIniciales: Usuario[] = []): RepositorioUsuarios & {
   usuarios: Map<string, Usuario>;
@@ -167,6 +180,120 @@ export function crearProveedorLLMFalso(respuestas: RespuestaProveedorLLM[]): Pro
         throw new Error("El proveedor LLM falso se quedó sin respuestas guionadas.");
       }
       return respuesta;
+    },
+  };
+}
+
+export function crearRepositorioMaquinasFalso(maquinas: Maquina[] = []): RepositorioMaquinas & {
+  maquinas: Map<string, Maquina>;
+} {
+  const mapa = new Map(maquinas.map((m) => [m.id, m]));
+  return {
+    maquinas: mapa,
+    async buscarPorId(id) {
+      return mapa.get(id) ?? null;
+    },
+    async listarPorArea(areaId) {
+      return [...mapa.values()].filter((m) => m.areaId === areaId);
+    },
+  };
+}
+
+export function crearRepositorioAreasUsuarioFalso(
+  asignaciones: Record<string, string[]> = {},
+): RepositorioAreasUsuario & { asignaciones: Record<string, string[]> } {
+  return {
+    asignaciones,
+    async areasDe(usuarioId) {
+      return asignaciones[usuarioId] ?? [];
+    },
+  };
+}
+
+export function crearRepositorioFallasFalso(): RepositorioFallas & { fallas: Map<string, ReporteFalla> } {
+  const fallas = new Map<string, ReporteFalla>();
+  return {
+    fallas,
+    async crear(reporte) {
+      fallas.set(reporte.id, reporte);
+    },
+    async buscarPorId(id) {
+      return fallas.get(id) ?? null;
+    },
+    async actualizarEstado(id, estado) {
+      const reporte = fallas.get(id);
+      if (reporte) fallas.set(id, { ...reporte, estado });
+    },
+    async listar(filtros: FiltrosListarFallas) {
+      return [...fallas.values()].filter((f) => {
+        if (filtros.machineId && f.machineId !== filtros.machineId) return false;
+        if (filtros.estado && f.estado !== filtros.estado) return false;
+        if (filtros.severidad && f.severidad !== filtros.severidad) return false;
+        return true;
+      });
+    },
+  };
+}
+
+export function crearRepositorioSensoresPorMaquinaFalso(
+  sensoresPorMaquina: Record<string, SensorInfo[]> = {},
+): RepositorioSensoresPorMaquina {
+  return {
+    async listarPorMaquina(machineId) {
+      return sensoresPorMaquina[machineId] ?? [];
+    },
+  };
+}
+
+export function crearRepositorioLecturasVentanaFalso(
+  lecturasPorSensor: Record<string, LecturaSensor[]> = {},
+): RepositorioLecturasVentana {
+  return {
+    async leerVentana(sensorId, desde, hasta) {
+      const lecturas = lecturasPorSensor[sensorId] ?? [];
+      return lecturas.filter((l) => l.ts >= desde && l.ts <= hasta);
+    },
+  };
+}
+
+export function crearRepositorioSnapshotsFallaFalso(): RepositorioSnapshotsFalla & {
+  snapshots: SnapshotSensor[];
+} {
+  const snapshots: SnapshotSensor[] = [];
+  return {
+    snapshots,
+    async crear(snapshot) {
+      snapshots.push(snapshot);
+    },
+    async listarPorReporte(failureReportId) {
+      return snapshots.filter((s) => s.failureReportId === failureReportId);
+    },
+  };
+}
+
+export function crearRepositorioNotificacionesFalso(): RepositorioNotificaciones & {
+  notificaciones: Notificacion[];
+} {
+  const notificaciones: Notificacion[] = [];
+  return {
+    notificaciones,
+    async crear(notificacion) {
+      notificaciones.push(notificacion);
+    },
+    async listar(areaId) {
+      return areaId ? notificaciones.filter((n) => n.areaId === areaId) : notificaciones;
+    },
+  };
+}
+
+export function crearColaTrabajosFalso(): ColaTrabajos & {
+  encolados: Array<{ tipo: string; payload: Record<string, unknown> }>;
+} {
+  const encolados: Array<{ tipo: string; payload: Record<string, unknown> }> = [];
+  return {
+    encolados,
+    async encolar(tipo, payload) {
+      encolados.push({ tipo, payload });
     },
   };
 }
