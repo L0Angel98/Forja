@@ -98,6 +98,8 @@ export * from "./use-cases/listar-sensores-mudos";
 export * from "./use-cases/parsear-rutina";
 export * from "./use-cases/validar-manifiesto-conector";
 export * from "./use-cases/parsear-conectores-yaml";
+export * from "./use-cases/construir-herramienta-conector";
+export * from "./use-cases/confirmar-accion-conector";
 
 /**
  * Dobles de prueba en memoria para los puertos de auth. Solo para tests

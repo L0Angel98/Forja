@@ -50,6 +50,8 @@ import type { EjecucionRutina } from "../entities/ejecucion-rutina";
 import type { RepositorioEjecucionesRutina } from "../ports/repositorio-ejecuciones-rutina";
 import type { CanalSalidaEnviador, ParametrosEnvioCanal } from "../ports/canal-salida-enviador";
 import type { EscritorArchivosRutinas } from "../ports/escritor-archivos-rutinas";
+import type { ClienteMcp } from "../ports/cliente-mcp";
+import type { ConectorActivo, RegistroConectoresActivos } from "../ports/registro-conectores-activos";
 
 export function crearRepositorioUsuariosMemoria(usuariosIniciales: Usuario[] = []): RepositorioUsuarios & {
   usuarios: Map<string, Usuario>;
@@ -689,6 +691,40 @@ export function crearEscritorArchivosRutinasFalso(
     },
     async eliminar(nombre) {
       archivos.delete(nombre);
+    },
+  };
+}
+
+export function crearClienteMcpFalso(
+  herramientas: readonly Record<string, unknown>[] = [],
+  respuestas: Record<string, string> = {},
+): ClienteMcp & { invocaciones: Array<{ nombre: string; parametros: Record<string, unknown> }>; cerrado: boolean } {
+  const invocaciones: Array<{ nombre: string; parametros: Record<string, unknown> }> = [];
+  const estado = { cerrado: false };
+  return {
+    invocaciones,
+    get cerrado() {
+      return estado.cerrado;
+    },
+    async listarHerramientas() {
+      return herramientas;
+    },
+    async invocar(nombre, parametros) {
+      invocaciones.push({ nombre, parametros });
+      return respuestas[nombre] ?? "";
+    },
+    async cerrar() {
+      estado.cerrado = true;
+    },
+  };
+}
+
+export function crearRegistroConectoresActivosFalso(
+  conectores: Record<string, ConectorActivo> = {},
+): RegistroConectoresActivos {
+  return {
+    obtener(nombreConector) {
+      return conectores[nombreConector];
     },
   };
 }
