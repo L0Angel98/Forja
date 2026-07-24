@@ -1,0 +1,45 @@
+/*
+ * Design tokens como variables CSS (spec 02-interfaz). Debe reflejar
+ * exactamente los mismos valores que ./tokens.ts — verificado por
+ * src/__tests__/tokens.test.ts. Ningún componente usa colores/medidas
+ * literales fuera de este archivo.
+ */
+:root {
+  --acero-900: #14181d;
+  --acero-700: #242c35;
+  --acero-300: #8a97a6;
+  --acero-050: #eef2f6;
+  --andon-verde: #1f9d55;
+  --andon-ambar: #e0a200;
+  --andon-naranja: #d9631e;
+  --andon-rojo: #d0342c;
+  --senal-azul: #2d6fd1;
+
+  --fuente-display: "Inter Tight", system-ui, sans-serif;
+  --fuente-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --texto-xs: 0.75rem;
+  --texto-sm: 0.875rem;
+  --texto-base: 1rem;
+  --texto-operador: 1.125rem;
+  --texto-lg: 1.375rem;
+  --texto-xl: 1.75rem;
+  --texto-xxl: 2.25rem;
+  --interlinea-cuerpo: 1.5;
+  --interlinea-titulo: 1.2;
+
+  --espacio-4: 4px;
+  --espacio-8: 8px;
+  --espacio-12: 12px;
+  --espacio-16: 16px;
+  --espacio-24: 24px;
+  --espacio-32: 32px;
+  --espacio-48: 48px;
+  --espacio-64: 64px;
+
+  --radio-control: 4px;
+  --radio-tarjeta: 8px;
+
+  --touch-target-minimo: 56px;
+  --ancho-franja-andon: 6px;
+}

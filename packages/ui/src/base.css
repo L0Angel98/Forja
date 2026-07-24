@@ -1,0 +1,55 @@
+/* Reset y fundaciones globales (spec 02-interfaz). Importa tokens.css y fuentes.css. */
+@import "./tokens.css";
+@import "./fuentes.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  background: var(--acero-900);
+  color: var(--acero-050);
+  font-family: var(--fuente-display);
+  font-size: var(--texto-base);
+  line-height: var(--interlinea-cuerpo);
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: var(--interlinea-titulo);
+}
+
+code,
+pre,
+.forja-mono {
+  font-family: var(--fuente-mono);
+}
+
+/* Foco visible siempre: nunca outline: none (spec de accesibilidad). */
+:focus-visible {
+  outline: 2px solid var(--senal-azul);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
