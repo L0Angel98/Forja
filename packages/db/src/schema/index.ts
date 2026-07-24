@@ -21,3 +21,5 @@ export * from "./document-area";
 export * from "./document-machine-family";
 export * from "./document-chunk";
 export * from "./response-feedback";
+export * from "./reading-quarantine";
+export * from "./ingest-status";

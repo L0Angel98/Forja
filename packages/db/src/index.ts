@@ -21,3 +21,8 @@ export { RepositorioNotificacionesDrizzle } from "./repositories/repositorio-not
 export { RepositorioDocumentosDrizzle } from "./repositories/repositorio-documentos-drizzle";
 export { RepositorioChunksDrizzle } from "./repositories/repositorio-chunks-drizzle";
 export { RepositorioFeedbackDrizzle } from "./repositories/repositorio-feedback-drizzle";
+export { RepositorioLecturasDrizzle } from "./repositories/repositorio-lecturas-drizzle";
+export { RepositorioCuarentenaDrizzle } from "./repositories/repositorio-cuarentena-drizzle";
+export { RepositorioCatalogoSensoresDrizzle } from "./repositories/repositorio-catalogo-sensores-drizzle";
+export { RepositorioAgregacionesSensoresDrizzle } from "./repositories/repositorio-agregaciones-sensores-drizzle";
+export { RepositorioEstadoIngestaDrizzle } from "./repositories/repositorio-estado-ingesta-drizzle";

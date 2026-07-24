@@ -1,5 +1,7 @@
-import { doublePrecision, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { doublePrecision, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { machine } from "./machine";
+
+export const MUDO_TRAS_MINUTOS_POR_DEFECTO = 60;
 
 export const sensor = pgTable("sensor", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -14,5 +16,6 @@ export const sensor = pgTable("sensor", {
   protocolo: text("protocolo", { enum: ["mqtt", "opcua"] })
     .notNull()
     .default("mqtt"),
+  mudoTrasMinutos: integer("mudo_tras_minutos").notNull().default(MUDO_TRAS_MINUTOS_POR_DEFECTO),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

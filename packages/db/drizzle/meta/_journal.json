@@ -57,6 +57,20 @@
       "when": 1784903111297,
       "tag": "0007_document_chunk_embedding_index",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1784905534063,
+      "tag": "0008_lyrical_korvac",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784905545805,
+      "tag": "0009_reading_continuous_aggregates",
+      "breakpoints": true
     }
   ]
 }
