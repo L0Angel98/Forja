@@ -24,6 +24,7 @@ export * from "./entities/sensor-mudo";
 export * from "./entities/estado-ingesta";
 export * from "./entities/rutina";
 export * from "./entities/ejecucion-rutina";
+export * from "./entities/conector";
 export * from "./permisos";
 export * from "./politica-bloqueo-login";
 export * from "./diff-lineas";
@@ -60,6 +61,13 @@ export * from "./errors/rutina-canal-invalido";
 export * from "./errors/rutina-presupuesto-excede-maximo";
 export * from "./errors/rutina-no-encontrada";
 export * from "./errors/rutina-frontmatter-invalido";
+export * from "./errors/manifiesto-conector-invalido";
+export * from "./errors/conector-herramienta-duplicada";
+export * from "./errors/conectores-yaml-invalido";
+export * from "./errors/conectores-yaml-secreto-inline";
+export * from "./errors/conector-no-disponible";
+export * from "./errors/conector-desconocido";
+export * from "./errors/webhook-url-no-permitida";
 
 export * from "./events/bus-eventos";
 export * from "./events/falla-reportada";
@@ -88,6 +96,8 @@ export * from "./use-cases/registrar-feedback-respuesta";
 export * from "./use-cases/consultar-sensores";
 export * from "./use-cases/listar-sensores-mudos";
 export * from "./use-cases/parsear-rutina";
+export * from "./use-cases/validar-manifiesto-conector";
+export * from "./use-cases/parsear-conectores-yaml";
 
 /**
  * Dobles de prueba en memoria para los puertos de auth. Solo para tests

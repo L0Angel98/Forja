@@ -38,3 +38,5 @@ export type { CatalogoHerramientas } from "./catalogo-herramientas";
 export type { RepositorioEjecucionesRutina } from "./repositorio-ejecuciones-rutina";
 export type { CanalSalidaEnviador, ParametrosEnvioCanal } from "./canal-salida-enviador";
 export type { EscritorArchivosRutinas } from "./escritor-archivos-rutinas";
+export type { ClienteMcp } from "./cliente-mcp";
+export type { ConectorActivo, RegistroConectoresActivos } from "./registro-conectores-activos";
