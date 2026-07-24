@@ -75,6 +75,8 @@ export * from "./use-cases/eliminar-documento";
 export * from "./use-cases/indexar-documento";
 export * from "./use-cases/buscar-documentos";
 export * from "./use-cases/registrar-feedback-respuesta";
+export * from "./use-cases/consultar-sensores";
+export * from "./use-cases/listar-sensores-mudos";
 
 /**
  * Dobles de prueba en memoria para los puertos de auth. Solo para tests
