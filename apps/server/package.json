@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "eval:fallas": "tsx scripts/eval-crear-reporte-falla.ts",
-    "eval:documentos": "tsx scripts/eval-buscar-documentos.ts"
+    "eval:documentos": "tsx scripts/eval-buscar-documentos.ts",
+    "eval:sensores": "tsx scripts/eval-consultar-sensores.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
