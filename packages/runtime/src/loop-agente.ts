@@ -1,6 +1,7 @@
 import type {
   HerramientaInvocadaTrace,
   MensajeConversacion,
+  OrigenTurno,
   ProveedorLLM,
   RegistradorTrace,
   Usuario,
@@ -15,6 +16,8 @@ const MENSAJE_PARAMETROS_INVALIDOS =
   "No pude completar la acción porque los parámetros no eran válidos. Intenta reformular tu solicitud.";
 const MENSAJE_DEGRADADO =
   "El asistente no está disponible en este momento. Puedes usar el formulario manual mientras tanto.";
+const MENSAJE_PRESUPUESTO_EXCEDIDO =
+  "Se alcanzó el presupuesto de tokens asignado a mitad de la ejecución. Esta es una respuesta parcial.";
 
 export interface DependenciasLoopAgente {
   registro: RegistroHerramientas;
@@ -29,12 +32,27 @@ export interface ParametrosTurno {
   historial: readonly MensajeConversacion[];
   systemPrompt: string;
   traceId: string;
+  /** "chat" por defecto (spec 16: las rutinas pasan `rutina/{nombre}`). */
+  origen?: OrigenTurno;
+  /** Sin límite si se omite. Si el consumo acumulado ya lo alcanza antes de la siguiente llamada al LLM, se aborta (spec 16). */
+  presupuestoTokens?: number;
+  /**
+   * usuarioId a registrar en el trace. Por defecto usuario.id (chat). Las
+   * rutinas no las dispara ningún usuario real: pasan null explícitamente
+   * para no violar la FK de agent_trace.user_id con un id inventado.
+   */
+  usuarioId?: string | null;
 }
 
 export interface ResultadoTurno {
   respuesta: string;
   herramientasInvocadas: readonly HerramientaInvocadaTrace[];
   exitoso: boolean;
+  /** true si se abortó a mitad de ejecución por exceder presupuestoTokens. */
+  excedida: boolean;
+  tokensEntrada: number;
+  tokensSalida: number;
+  costoUsd: number;
 }
 
 export async function ejecutarTurno(
@@ -52,9 +70,16 @@ export async function ejecutarTurno(
   let reintentosParametrosInvalidos = 0;
   let respuesta: string | undefined;
   let exitoso = true;
+  let excedida = false;
 
   try {
     for (let invocacion = 0; invocacion < MAX_INVOCACIONES_HERRAMIENTA; invocacion++) {
+      if (params.presupuestoTokens !== undefined && tokensEntrada + tokensSalida >= params.presupuestoTokens) {
+        excedida = true;
+        respuesta = MENSAJE_PRESUPUESTO_EXCEDIDO;
+        break;
+      }
+
       const salidaLlm = await deps.llm.decidir({
         systemPrompt: params.systemPrompt,
         historial,
@@ -117,8 +142,8 @@ export async function ejecutarTurno(
 
   await deps.trace.registrarTurno({
     plantId: params.plantId,
-    usuarioId: params.usuario.id,
-    origen: "chat",
+    usuarioId: params.usuarioId !== undefined ? params.usuarioId : params.usuario.id,
+    origen: params.origen ?? "chat",
     herramientasInvocadas,
     tokensEntrada,
     tokensSalida,
@@ -127,7 +152,7 @@ export async function ejecutarTurno(
     exitoso,
   });
 
-  return { respuesta, herramientasInvocadas, exitoso };
+  return { respuesta, herramientasInvocadas, exitoso, excedida, tokensEntrada, tokensSalida, costoUsd };
 }
 
 function agregarMensajeHerramienta(

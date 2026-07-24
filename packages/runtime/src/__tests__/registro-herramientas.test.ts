@@ -76,4 +76,50 @@ describe("RegistroHerramientas", () => {
       expect(registro.buscarDisponiblePara("no-existe", "admin")).toBeUndefined();
     });
   });
+
+  describe("existe / esSoloLectura (puerto CatalogoHerramientas)", () => {
+    it("existe() es true solo para herramientas registradas", () => {
+      const registro = new RegistroHerramientas();
+      registro.registrar(herramientaDePrueba({ nombre: "consultar_fallas", rolesPermitidos: ["admin"] }));
+
+      expect(registro.existe("consultar_fallas")).toBe(true);
+      expect(registro.existe("no-existe")).toBe(false);
+    });
+
+    it("esSoloLectura() refleja el campo soloLectura de la herramienta, false si no existe", () => {
+      const registro = new RegistroHerramientas();
+      registro.registrar(herramientaDePrueba({ nombre: "lectura", rolesPermitidos: ["admin"], soloLectura: true }));
+      registro.registrar(herramientaDePrueba({ nombre: "escritura", rolesPermitidos: ["admin"], soloLectura: false }));
+
+      expect(registro.esSoloLectura("lectura")).toBe(true);
+      expect(registro.esSoloLectura("escritura")).toBe(false);
+      expect(registro.esSoloLectura("no-existe")).toBe(false);
+    });
+  });
+
+  describe("disponiblesParaRutina", () => {
+    it("por construcción nunca expone una herramienta de escritura, aunque se pida por nombre", () => {
+      const registro = new RegistroHerramientas();
+      registro.registrar(herramientaDePrueba({ nombre: "lectura", rolesPermitidos: ["admin"], soloLectura: true }));
+      registro.registrar(herramientaDePrueba({ nombre: "escritura", rolesPermitidos: ["admin"], soloLectura: false }));
+
+      const resultado = registro.disponiblesParaRutina(["lectura", "escritura", "no-existe"]);
+
+      expect(resultado.map((h) => h.nombre)).toEqual(["lectura"]);
+    });
+  });
+
+  describe("RegistroHerramientas.desde", () => {
+    it("construye un registry acotado exactamente a las herramientas dadas", () => {
+      const original = new RegistroHerramientas();
+      const lectura = herramientaDePrueba({ nombre: "lectura", rolesPermitidos: ["admin"], soloLectura: true });
+      original.registrar(lectura);
+      original.registrar(herramientaDePrueba({ nombre: "escritura", rolesPermitidos: ["admin"], soloLectura: false }));
+
+      const acotado = RegistroHerramientas.desde(original.disponiblesParaRutina(["lectura", "escritura"]));
+
+      expect(acotado.disponiblesPara("admin").map((h) => h.nombre)).toEqual(["lectura"]);
+      expect(acotado.buscarDisponiblePara("escritura", "admin")).toBeUndefined();
+    });
+  });
 });

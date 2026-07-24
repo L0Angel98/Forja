@@ -64,7 +64,15 @@ describe("ejecutarTurno", () => {
 
     const resultado = await ejecutarTurno({ registro, llm, trace }, parametrosBase());
 
-    expect(resultado).toEqual({ respuesta: "Todo en orden.", herramientasInvocadas: [], exitoso: true });
+    expect(resultado).toEqual({
+      respuesta: "Todo en orden.",
+      herramientasInvocadas: [],
+      exitoso: true,
+      excedida: false,
+      tokensEntrada: 10,
+      tokensSalida: 5,
+      costoUsd: 0.001,
+    });
     expect(trace.turnos).toHaveLength(1);
     expect(trace.turnos[0]).toMatchObject({
       exitoso: true,
@@ -175,5 +183,90 @@ describe("ejecutarTurno", () => {
 
     expect(trace.turnos).toHaveLength(2);
     expect(trace.turnos.map((t) => t.exitoso)).toEqual([true, false]);
+  });
+
+  describe("presupuestoTokens (spec 16)", () => {
+    it("aborta a mitad de ejecución si el consumo acumulado alcanza el presupuesto, y lo marca excedida", async () => {
+      const { registro, trace } = construirDeps();
+      registro.registrar(herramientaEco);
+      const llm = crearProveedorLLMFalso([
+        {
+          decision: { tipo: "invocar_herramienta", nombre: "eco", parametros: { texto: "hola" } },
+          tokensEntrada: 6,
+          tokensSalida: 6,
+          costoUsd: 0.001,
+        },
+        { decision: { tipo: "respuesta", texto: "nunca debería llegar aquí" }, tokensEntrada: 1, tokensSalida: 1, costoUsd: 0 },
+      ]);
+
+      const resultado = await ejecutarTurno(
+        { registro, llm, trace },
+        parametrosBase({ presupuestoTokens: 10 }),
+      );
+
+      expect(llm.llamadas).toBe(1);
+      expect(resultado.excedida).toBe(true);
+      expect(resultado.respuesta).toContain("presupuesto de tokens");
+      expect(resultado.tokensEntrada + resultado.tokensSalida).toBe(12);
+    });
+
+    it("no aborta si el consumo nunca alcanza el presupuesto", async () => {
+      const { registro, trace } = construirDeps();
+      const llm = crearProveedorLLMFalso([
+        { decision: { tipo: "respuesta", texto: "listo" }, tokensEntrada: 5, tokensSalida: 5, costoUsd: 0 },
+      ]);
+
+      const resultado = await ejecutarTurno(
+        { registro, llm, trace },
+        parametrosBase({ presupuestoTokens: 1000 }),
+      );
+
+      expect(resultado.excedida).toBe(false);
+      expect(resultado.respuesta).toBe("listo");
+    });
+
+    it("sin presupuestoTokens, nunca se aborta por presupuesto", async () => {
+      const { registro, trace } = construirDeps();
+      registro.registrar(herramientaEco);
+      const invocarEco = {
+        decision: { tipo: "invocar_herramienta" as const, nombre: "eco", parametros: { texto: "x" } },
+        tokensEntrada: 1000,
+        tokensSalida: 1000,
+        costoUsd: 0,
+      };
+      const llm = crearProveedorLLMFalso(Array.from({ length: 6 }, () => invocarEco));
+
+      const resultado = await ejecutarTurno({ registro, llm, trace }, parametrosBase());
+
+      expect(resultado.excedida).toBe(false);
+      expect(llm.llamadas).toBe(6);
+    });
+  });
+
+  describe("origen y usuarioId del trace (spec 16)", () => {
+    it("por defecto registra origen chat y usuarioId del usuario que envía el mensaje", async () => {
+      const { registro, trace } = construirDeps();
+      const llm = crearProveedorLLMFalso([
+        { decision: { tipo: "respuesta", texto: "ok" }, tokensEntrada: 1, tokensSalida: 1, costoUsd: 0 },
+      ]);
+
+      await ejecutarTurno({ registro, llm, trace }, parametrosBase());
+
+      expect(trace.turnos[0]).toMatchObject({ origen: "chat", usuarioId: usuarioOperador.id });
+    });
+
+    it("una rutina pasa origen rutina/{nombre} y usuarioId null", async () => {
+      const { registro, trace } = construirDeps();
+      const llm = crearProveedorLLMFalso([
+        { decision: { tipo: "respuesta", texto: "resumen" }, tokensEntrada: 1, tokensSalida: 1, costoUsd: 0 },
+      ]);
+
+      await ejecutarTurno(
+        { registro, llm, trace },
+        parametrosBase({ origen: "rutina/resumen-diario", usuarioId: null }),
+      );
+
+      expect(trace.turnos[0]).toMatchObject({ origen: "rutina/resumen-diario", usuarioId: null });
+    });
   });
 });
