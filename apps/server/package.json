@@ -14,7 +14,9 @@
     "@fastify/cookie": "^11.0.2",
     "@forja/core": "workspace:*",
     "@forja/db": "workspace:*",
+    "@forja/runtime": "workspace:*",
     "@forja/shared": "workspace:*",
+    "@forja/tools": "workspace:*",
     "fastify": "^5.2.1",
     "pg-boss": "^10.1.5",
     "zod": "^3.24.1"

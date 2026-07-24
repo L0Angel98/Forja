@@ -6,11 +6,15 @@ Esquema Drizzle, migraciones y repositorios sobre Postgres 16 + TimescaleDB + pg
 
 Spec 10 (fundación): `plant`, `area`, `machine_family`, `machine`, `sensor`, `reading` (hypertable de Timescale por `ts`), `role`, `app_user`, `agent_trace`.
 
-Spec 11 (auth): `session`, `audit_log`, `login_attempt`.
+Spec 11 (auth): `session`, `audit_log` (con columna `detalle` jsonb desde spec 12), `login_attempt`.
 
-## Repositorios (spec 11)
+Spec 12 (workspace/runtime): `memory_suggestion`.
 
-`RepositorioUsuariosDrizzle`, `RepositorioSesionesDrizzle`, `RepositorioIntentosLoginDrizzle`, `RegistradorAuditoriaDrizzle`, `Argon2Hasher` — implementan los puertos de `@forja/core` para autenticación. `RepositorioSesiones` tiene suite de contrato (`src/__tests__/contracts/`) que corre igual contra la versión en memoria y la de Drizzle.
+## Repositorios
+
+Spec 11: `RepositorioUsuariosDrizzle`, `RepositorioSesionesDrizzle`, `RepositorioIntentosLoginDrizzle`, `RegistradorAuditoriaDrizzle`, `Argon2Hasher`. `RepositorioSesiones` tiene suite de contrato (`src/__tests__/contracts/`) que corre igual contra la versión en memoria y la de Drizzle.
+
+Spec 12: `RepositorioSugerenciasMemoriaDrizzle`, `RegistradorTraceDrizzle` (escribe en `agent_trace`).
 
 ## Comandos
 

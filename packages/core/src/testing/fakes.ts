@@ -5,6 +5,14 @@ import type { RepositorioSesiones } from "../ports/repositorio-sesiones";
 import type { HasherContrasenas } from "../ports/hasher-contrasenas";
 import type { RegistroIntentos, RepositorioIntentosLogin } from "../ports/repositorio-intentos-login";
 import type { EventoAuditoria, RegistradorAuditoria } from "../ports/registrador-auditoria";
+import type { SugerenciaMemoria } from "../entities/sugerencia-memoria";
+import type { RepositorioSugerenciasMemoria } from "../ports/repositorio-sugerencias-memoria";
+import type { EscritorMemoria } from "../ports/escritor-memoria";
+import type { ArchivoWorkspaceEditable } from "../entities/workspace";
+import type { EscritorArchivosWorkspace } from "../ports/escritor-archivos-workspace";
+import type { TurnoAgente } from "../entities/turno-agente";
+import type { RegistradorTrace } from "../ports/registrador-trace";
+import type { ProveedorLLM, RespuestaProveedorLLM } from "../ports/proveedor-llm";
 
 export function crearRepositorioUsuariosMemoria(usuariosIniciales: Usuario[] = []): RepositorioUsuarios & {
   usuarios: Map<string, Usuario>;
@@ -84,6 +92,81 @@ export function crearRegistradorAuditoriaMemoria(): RegistradorAuditoria & { eve
     eventos,
     async registrar(evento) {
       eventos.push(evento);
+    },
+  };
+}
+
+export function crearRepositorioSugerenciasMemoriaFalso(): RepositorioSugerenciasMemoria & {
+  sugerencias: Map<string, SugerenciaMemoria>;
+} {
+  const sugerencias = new Map<string, SugerenciaMemoria>();
+  return {
+    sugerencias,
+    async crear(sugerencia) {
+      sugerencias.set(sugerencia.id, sugerencia);
+    },
+    async buscarPorId(id) {
+      return sugerencias.get(id) ?? null;
+    },
+    async listarPendientes() {
+      return [...sugerencias.values()].filter((s) => s.estado === "pendiente");
+    },
+    async actualizarEstado(id, estado) {
+      const sugerencia = sugerencias.get(id);
+      if (sugerencia) sugerencias.set(id, { ...sugerencia, estado });
+    },
+  };
+}
+
+export function crearEscritorMemoriaFalso(): EscritorMemoria & { entradas: string[] } {
+  const entradas: string[] = [];
+  return {
+    entradas,
+    async agregarEntrada(texto) {
+      entradas.push(texto);
+    },
+  };
+}
+
+export function crearEscritorArchivosWorkspaceFalso(
+  contenidoInicial: Partial<Record<ArchivoWorkspaceEditable, string>> = {},
+): EscritorArchivosWorkspace & { archivos: Record<string, string> } {
+  const archivos: Record<string, string> = { soul: "", planta: "", ...contenidoInicial };
+  return {
+    archivos,
+    async leer(archivo) {
+      return archivos[archivo] ?? "";
+    },
+    async escribir(archivo, contenido) {
+      archivos[archivo] = contenido;
+    },
+  };
+}
+
+export function crearRegistradorTraceFalso(): RegistradorTrace & { turnos: TurnoAgente[] } {
+  const turnos: TurnoAgente[] = [];
+  return {
+    turnos,
+    async registrarTurno(turno) {
+      turnos.push(turno);
+    },
+  };
+}
+
+/** Proveedor LLM falso: entrega respuestas guionadas en orden, una por llamada a `decidir`. */
+export function crearProveedorLLMFalso(respuestas: RespuestaProveedorLLM[]): ProveedorLLM & { llamadas: number } {
+  const estado = { llamadas: 0 };
+  return {
+    get llamadas() {
+      return estado.llamadas;
+    },
+    async decidir() {
+      const respuesta = respuestas[estado.llamadas];
+      estado.llamadas += 1;
+      if (!respuesta) {
+        throw new Error("El proveedor LLM falso se quedó sin respuestas guionadas.");
+      }
+      return respuesta;
     },
   };
 }

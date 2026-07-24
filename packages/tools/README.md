@@ -2,4 +2,6 @@
 
 Herramientas del agente (patrón Command): nombre, descripción, schema Zod, execute.
 
-> Paquete en fundación (spec 10): estructura y build listos; los casos de uso se agregan en specs posteriores.
+- `crearHerramientaProponerMemoria` (spec 12): disponible para los tres roles. El agente la invoca para dejar una entrada de memoria como sugerencia pendiente; el admin la aprueba o rechaza desde `/api/admin/memoria/sugerencias`.
+
+> Las herramientas de producto (`crear_reporte_falla`, `consultar_sensores`, `buscar_documentos`, etc.) llegan en las specs 13-15.

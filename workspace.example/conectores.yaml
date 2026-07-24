@@ -1,0 +1,16 @@
+# Conectores externos activos (servidores MCP) y qué roles pueden usar cada
+# herramienta que exponen. La spec 17 agrega el loader que lee este archivo;
+# hasta entonces es solo el formato de referencia.
+#
+# conectores:
+#   - nombre: google-calendar
+#     activo: false
+#     permisos:
+#       crear_evento: [supervisor, admin]
+#       consultar_disponibilidad: [operador, supervisor, admin]
+#   - nombre: correo-smtp
+#     activo: false
+#     permisos:
+#       enviar_correo: [supervisor, admin]
+
+conectores: []

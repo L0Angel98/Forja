@@ -12,6 +12,7 @@ export class RegistradorAuditoriaDrizzle implements RegistradorAuditoria {
       email: evento.email ?? null,
       userId: evento.usuarioId ?? null,
       ocurridoEn: evento.ocurridoEn,
+      detalle: evento.detalle ?? null,
     });
   }
 }

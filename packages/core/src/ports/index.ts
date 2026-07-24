@@ -8,3 +8,8 @@ export type {
   TipoEventoAuditoria,
 } from "./registrador-auditoria";
 export { TIPOS_EVENTO_AUDITORIA } from "./registrador-auditoria";
+export type { ProveedorLLM, ParametrosDecisionLLM, RespuestaProveedorLLM } from "./proveedor-llm";
+export type { RegistradorTrace } from "./registrador-trace";
+export type { RepositorioSugerenciasMemoria } from "./repositorio-sugerencias-memoria";
+export type { EscritorMemoria } from "./escritor-memoria";
+export type { EscritorArchivosWorkspace } from "./escritor-archivos-workspace";

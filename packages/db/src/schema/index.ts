@@ -10,3 +10,4 @@ export * from "./agent-trace";
 export * from "./session";
 export * from "./audit-log";
 export * from "./login-attempt";
+export * from "./memory-suggestion";

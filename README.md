@@ -11,10 +11,13 @@ Requiere Docker y Docker Compose.
 ```bash
 git clone <url-del-repo> forja && cd forja
 cp .env.example .env
+cp -r workspace.example workspace   # opcional: contenido de ejemplo para soul.md/planta.md/conectores.yaml
 docker compose up -d --build
 ```
 
-Con eso: Postgres (TimescaleDB + pgvector) queda arriba, las migraciones se aplican automáticamente y — con `RUN_SEED=true` en `.env` (default) — el seed de desarrollo (1 planta, 2 áreas, 5 máquinas, 10 sensores, 7 días de lecturas sintéticas) se carga solo. La app queda disponible en `http://localhost` (Caddy).
+Con eso: Postgres (TimescaleDB + pgvector) queda arriba, las migraciones se aplican automáticamente y — con `RUN_SEED=true` en `.env` (default) — el seed de desarrollo (1 planta, 2 áreas, 5 máquinas, 10 sensores, 7 días de lecturas sintéticas, 3 usuarios de prueba) se carga solo. La app queda disponible en `http://localhost` (Caddy).
+
+`./workspace` se monta como volumen en `server` (`WORKSPACE_DIR`). Si el paso opcional de copiar `workspace.example/` se omite, el copiloto arranca con la personalidad y el contexto de planta por defecto (con una advertencia en `GET /api/admin/workspace`) hasta que un admin los edite desde ahí.
 
 ## Desarrollo del monorepo
 

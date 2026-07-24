@@ -9,3 +9,5 @@ export { RepositorioUsuariosDrizzle } from "./repositories/repositorio-usuarios-
 export { RepositorioSesionesDrizzle } from "./repositories/repositorio-sesiones-drizzle";
 export { RepositorioIntentosLoginDrizzle } from "./repositories/repositorio-intentos-login-drizzle";
 export { RegistradorAuditoriaDrizzle } from "./repositories/registrador-auditoria-drizzle";
+export { RepositorioSugerenciasMemoriaDrizzle } from "./repositories/repositorio-sugerencias-memoria-drizzle";
+export { RegistradorTraceDrizzle } from "./repositories/registrador-trace-drizzle";

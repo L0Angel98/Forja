@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Usuario } from "@forja/core";
 import { buildApp } from "../app";
 import { NOMBRE_COOKIE_SESION } from "../auth/cookie";
-import { crearComposicionAuthFalsa } from "./fakes";
+import { crearComposicionAuthFalsa, crearComposicionRuntimeFalsa } from "./fakes";
 
 const usuarioOperador: Usuario = {
   id: "usuario-1",
@@ -30,7 +30,7 @@ function extraerCookie(setCookieHeader: string | string[] | undefined): string |
 describe("POST /api/auth/login", () => {
   it("credenciales correctas devuelven 200, el usuario y una cookie de sesión httpOnly", async () => {
     const auth = crearComposicionAuthFalsa([usuarioOperador]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const respuesta = await app.inject({
       method: "POST",
@@ -54,7 +54,7 @@ describe("POST /api/auth/login", () => {
 
   it("password incorrecta responde 401 genérico", async () => {
     const auth = crearComposicionAuthFalsa([usuarioOperador]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const respuesta = await app.inject({
       method: "POST",
@@ -68,7 +68,7 @@ describe("POST /api/auth/login", () => {
 
   it("usuario desactivado responde 401 con código específico", async () => {
     const auth = crearComposicionAuthFalsa([usuarioDesactivado]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const respuesta = await app.inject({
       method: "POST",
@@ -82,7 +82,7 @@ describe("POST /api/auth/login", () => {
 
   it("tras 5 intentos fallidos responde 429 y queda auditado", async () => {
     const auth = crearComposicionAuthFalsa([usuarioOperador]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     for (let i = 0; i < 5; i++) {
       await app.inject({
@@ -104,7 +104,7 @@ describe("POST /api/auth/login", () => {
 
   it("cuerpo inválido responde 400", async () => {
     const auth = crearComposicionAuthFalsa([usuarioOperador]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const respuesta = await app.inject({
       method: "POST",
@@ -119,7 +119,7 @@ describe("POST /api/auth/login", () => {
 describe("GET /api/auth/me", () => {
   it("sin cookie responde 401", async () => {
     const auth = crearComposicionAuthFalsa([usuarioOperador]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const respuesta = await app.inject({ method: "GET", url: "/api/auth/me" });
 
@@ -128,7 +128,7 @@ describe("GET /api/auth/me", () => {
 
   it("con sesión válida responde 200 con el usuario", async () => {
     const auth = crearComposicionAuthFalsa([usuarioOperador]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const login = await app.inject({
       method: "POST",
@@ -150,7 +150,7 @@ describe("GET /api/auth/me", () => {
   it("un usuario desactivado tras iniciar sesión recibe 401 en la siguiente petición", async () => {
     const usuarioMutable = { ...usuarioOperador };
     const auth = crearComposicionAuthFalsa([usuarioMutable]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const login = await app.inject({
       method: "POST",
@@ -174,7 +174,7 @@ describe("GET /api/auth/me", () => {
 describe("POST /api/auth/logout", () => {
   it("revoca la sesión y limpia la cookie", async () => {
     const auth = crearComposicionAuthFalsa([usuarioOperador]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const login = await app.inject({
       method: "POST",
@@ -200,7 +200,7 @@ describe("POST /api/auth/logout", () => {
 
   it("cerrar sesión sin cookie no falla", async () => {
     const auth = crearComposicionAuthFalsa([usuarioOperador]);
-    const app = buildApp({ auth });
+    const app = buildApp({ auth, runtime: crearComposicionRuntimeFalsa() });
 
     const respuesta = await app.inject({ method: "POST", url: "/api/auth/logout" });
 

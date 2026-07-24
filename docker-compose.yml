@@ -39,6 +39,9 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:?Falta DATABASE_URL en .env}
       PORT: ${PORT:-3000}
+      WORKSPACE_DIR: /workspace
+    volumes:
+      - ./workspace:/workspace
 
   ingest:
     build:
