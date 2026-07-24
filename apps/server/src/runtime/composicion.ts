@@ -9,11 +9,16 @@ import type {
   GeneradorEmbeddings,
   ProveedorLLM,
   RegistradorTrace,
+  RepositorioAgregacionesSensores,
   RepositorioAreasUsuario,
+  RepositorioCatalogoSensores,
   RepositorioChunks,
+  RepositorioCuarentena,
   RepositorioDocumentos,
+  RepositorioEstadoIngesta,
   RepositorioFallas,
   RepositorioFeedback,
+  RepositorioLecturas,
   RepositorioLecturasVentana,
   RepositorioMaquinas,
   RepositorioNotificaciones,
@@ -26,11 +31,16 @@ import { BusEventos, registrarManejadoresFalla } from "@forja/core";
 import type { ForjaDb } from "@forja/db";
 import {
   RegistradorTraceDrizzle,
+  RepositorioAgregacionesSensoresDrizzle,
   RepositorioAreasUsuarioDrizzle,
+  RepositorioCatalogoSensoresDrizzle,
   RepositorioChunksDrizzle,
+  RepositorioCuarentenaDrizzle,
   RepositorioDocumentosDrizzle,
+  RepositorioEstadoIngestaDrizzle,
   RepositorioFallasDrizzle,
   RepositorioFeedbackDrizzle,
+  RepositorioLecturasDrizzle,
   RepositorioLecturasVentanaDrizzle,
   RepositorioMaquinasDrizzle,
   RepositorioNotificacionesDrizzle,
@@ -51,6 +61,8 @@ import {
 } from "@forja/runtime";
 import {
   crearHerramientaBuscarDocumentos,
+  crearHerramientaConsultarEstadoSensores,
+  crearHerramientaConsultarSensores,
   crearHerramientaCrearReporteFalla,
   crearHerramientaProponerMemoria,
 } from "@forja/tools";
@@ -84,6 +96,11 @@ export interface ComposicionRuntime {
   documentos: RepositorioDocumentos;
   chunks: RepositorioChunks;
   feedback: RepositorioFeedback;
+  catalogoSensores: RepositorioCatalogoSensores;
+  lecturas: RepositorioLecturas;
+  cuarentena: RepositorioCuarentena;
+  agregacionesSensores: RepositorioAgregacionesSensores;
+  estadoIngesta: RepositorioEstadoIngesta;
   almacen: AlmacenArchivos;
   extractor: ExtractorTexto;
   selectorEstrategia: SelectorEstrategiaChunking;
@@ -131,6 +148,11 @@ export async function construirComposicionRuntime(
   const documentos = new RepositorioDocumentosDrizzle(db);
   const chunks = new RepositorioChunksDrizzle(db);
   const feedback = new RepositorioFeedbackDrizzle(db);
+  const catalogoSensores = new RepositorioCatalogoSensoresDrizzle(db);
+  const lecturas = new RepositorioLecturasDrizzle(db);
+  const cuarentena = new RepositorioCuarentenaDrizzle(db);
+  const agregacionesSensores = new RepositorioAgregacionesSensoresDrizzle(db);
+  const estadoIngesta = new RepositorioEstadoIngestaDrizzle(db);
   const almacen = new AlmacenArchivosFs(directorioDocumentos);
   const extractor = new ExtractorTextoForja();
   const selectorEstrategia = new RegistroEstrategiasChunking();
@@ -146,6 +168,12 @@ export async function construirComposicionRuntime(
   );
   registroHerramientas.registrar(crearHerramientaCrearReporteFalla({ maquinas, areasUsuario }));
   registroHerramientas.registrar(crearHerramientaBuscarDocumentos({ embeddings, chunks, areasUsuario }));
+  registroHerramientas.registrar(
+    crearHerramientaConsultarSensores({ maquinas, areasUsuario, catalogo: catalogoSensores, agregaciones: agregacionesSensores }),
+  );
+  registroHerramientas.registrar(
+    crearHerramientaConsultarEstadoSensores({ maquinas, areasUsuario, catalogo: catalogoSensores, lecturas }),
+  );
 
   return {
     plantId: planta.id,
@@ -166,6 +194,11 @@ export async function construirComposicionRuntime(
     documentos,
     chunks,
     feedback,
+    catalogoSensores,
+    lecturas,
+    cuarentena,
+    agregacionesSensores,
+    estadoIngesta,
     almacen,
     extractor,
     selectorEstrategia,

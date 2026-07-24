@@ -11,12 +11,17 @@ import {
   crearProveedorLLMFalso,
   crearRegistradorAuditoriaMemoria,
   crearRegistradorTraceFalso,
+  crearRepositorioAgregacionesSensoresFalso,
   crearRepositorioAreasUsuarioFalso,
+  crearRepositorioCatalogoSensoresFalso,
   crearRepositorioChunksFalso,
+  crearRepositorioCuarentenaFalso,
   crearRepositorioDocumentosFalso,
+  crearRepositorioEstadoIngestaFalso,
   crearRepositorioFallasFalso,
   crearRepositorioFeedbackFalso,
   crearRepositorioIntentosLoginMemoria,
+  crearRepositorioLecturasFalso,
   crearRepositorioLecturasVentanaFalso,
   crearRepositorioMaquinasFalso,
   crearRepositorioNotificacionesFalso,
@@ -33,6 +38,8 @@ import {
 import { RegistroHerramientas, type IWorkspaceLoader } from "@forja/runtime";
 import {
   crearHerramientaBuscarDocumentos,
+  crearHerramientaConsultarEstadoSensores,
+  crearHerramientaConsultarSensores,
   crearHerramientaCrearReporteFalla,
   crearHerramientaProponerMemoria,
 } from "@forja/tools";
@@ -103,6 +110,11 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   documentosRepo: ReturnType<typeof crearRepositorioDocumentosFalso>;
   chunksRepo: ReturnType<typeof crearRepositorioChunksFalso>;
   feedbackRepo: ReturnType<typeof crearRepositorioFeedbackFalso>;
+  catalogoSensoresRepo: ReturnType<typeof crearRepositorioCatalogoSensoresFalso>;
+  lecturasRepo: ReturnType<typeof crearRepositorioLecturasFalso>;
+  cuarentenaRepo: ReturnType<typeof crearRepositorioCuarentenaFalso>;
+  agregacionesSensoresRepo: ReturnType<typeof crearRepositorioAgregacionesSensoresFalso>;
+  estadoIngestaRepo: ReturnType<typeof crearRepositorioEstadoIngestaFalso>;
   almacenFalso: ReturnType<typeof crearAlmacenArchivosFalso>;
 } {
   const sugerenciasMemoriaRepo = crearRepositorioSugerenciasMemoriaFalso();
@@ -118,6 +130,11 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   const documentosRepo = crearRepositorioDocumentosFalso();
   const chunksRepo = crearRepositorioChunksFalso(documentosRepo.documentos);
   const feedbackRepo = crearRepositorioFeedbackFalso();
+  const catalogoSensoresRepo = crearRepositorioCatalogoSensoresFalso();
+  const lecturasRepo = crearRepositorioLecturasFalso();
+  const cuarentenaRepo = crearRepositorioCuarentenaFalso();
+  const agregacionesSensoresRepo = crearRepositorioAgregacionesSensoresFalso();
+  const estadoIngestaRepo = crearRepositorioEstadoIngestaFalso();
   const almacenFalso = crearAlmacenArchivosFalso();
   const colaFalsa = crearColaTrabajosFalso();
   const bus = new BusEventos();
@@ -132,6 +149,22 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   );
   registroHerramientas.registrar(
     crearHerramientaBuscarDocumentos({ embeddings, chunks: chunksRepo, areasUsuario: areasUsuarioRepo }),
+  );
+  registroHerramientas.registrar(
+    crearHerramientaConsultarSensores({
+      maquinas: maquinasRepo,
+      areasUsuario: areasUsuarioRepo,
+      catalogo: catalogoSensoresRepo,
+      agregaciones: agregacionesSensoresRepo,
+    }),
+  );
+  registroHerramientas.registrar(
+    crearHerramientaConsultarEstadoSensores({
+      maquinas: maquinasRepo,
+      areasUsuario: areasUsuarioRepo,
+      catalogo: catalogoSensoresRepo,
+      lecturas: lecturasRepo,
+    }),
   );
 
   return {
@@ -159,6 +192,11 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
     documentos: documentosRepo,
     chunks: chunksRepo,
     feedback: feedbackRepo,
+    catalogoSensores: catalogoSensoresRepo,
+    lecturas: lecturasRepo,
+    cuarentena: cuarentenaRepo,
+    agregacionesSensores: agregacionesSensoresRepo,
+    estadoIngesta: estadoIngestaRepo,
     almacen: almacenFalso,
     extractor: crearExtractorTextoFalso(),
     selectorEstrategia: crearSelectorEstrategiaFalso(),
@@ -178,6 +216,11 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
     documentosRepo,
     chunksRepo,
     feedbackRepo,
+    catalogoSensoresRepo,
+    lecturasRepo,
+    cuarentenaRepo,
+    agregacionesSensoresRepo,
+    estadoIngestaRepo,
     almacenFalso,
   };
 }
