@@ -44,7 +44,7 @@ export class RepositorioLecturasDrizzle implements RepositorioLecturas {
       const inicio = new Date(desde.getTime() - vista.paddingMs);
       const fin = new Date(hasta.getTime() + vista.paddingMs);
       await this.db.execute(
-        sql`CALL refresh_continuous_aggregate(${sql.raw(`'${vista.nombre}'`)}::regclass, ${inicio}, ${fin})`,
+        sql`CALL refresh_continuous_aggregate(${sql.raw(`'${vista.nombre}'`)}::regclass, ${inicio.toISOString()}::timestamptz, ${fin.toISOString()}::timestamptz)`,
       );
     }
   }
