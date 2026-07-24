@@ -5,6 +5,7 @@ API HTTP (Fastify) + runtime del agente. Único lugar donde se ensamblan impleme
 - `src/app.ts` — instancia Fastify y rutas (capa HTTP pura, testeable con `.inject()`).
 - `src/pgboss.ts` — arranque de pg-boss sobre el mismo Postgres.
 - `src/main.ts` — entrypoint: arranca pg-boss y levanta el servidor HTTP.
+- `src/auth/` (spec 11) — `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`. Sesiones con cookie httpOnly + tabla `session` en Postgres (sin JWT). `composicion.ts` ensambla los repositorios Drizzle + Argon2Hasher con los casos de uso de `@forja/core`. `middleware.ts` expone `requiereSesion`/`requiereRol(...roles)` reutilizables por rutas futuras.
 
 ## Comandos
 

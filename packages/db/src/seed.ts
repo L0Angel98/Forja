@@ -1,10 +1,17 @@
 import { and, eq } from "drizzle-orm";
+import { Argon2Hasher } from "./auth/argon2-hasher";
 import { crearCliente } from "./client";
 import { databaseUrl } from "./env";
-import { area, machine, plant, role, ROLES, sensor, reading } from "./schema/index";
+import { appUser, area, machine, plant, role, ROLES, sensor, reading } from "./schema/index";
 import type { ForjaDb } from "./client";
 
 const NOMBRE_PLANTA = "Planta Demo";
+const CONTRASENA_DEV = "Forja123!";
+const USUARIOS_DEV: Array<{ email: string; nombre: string; rol: (typeof ROLES)[number] }> = [
+  { email: "operador@forja.local", nombre: "Operador Demo", rol: "operador" },
+  { email: "supervisor@forja.local", nombre: "Supervisor Demo", rol: "supervisor" },
+  { email: "admin@forja.local", nombre: "Admin Demo", rol: "admin" },
+];
 const NOMBRES_AREAS = ["Ensamble", "Maquinado"] as const;
 const MAQUINAS_POR_AREA: Record<(typeof NOMBRES_AREAS)[number], string[]> = {
   Ensamble: ["Línea 1", "Línea 2", "Robot soldador"],
@@ -18,6 +25,8 @@ export async function seed(db: ForjaDb): Promise<void> {
     .insert(role)
     .values(ROLES.map((id) => ({ id })))
     .onConflictDoNothing();
+
+  await sembrarUsuariosDev(db);
 
   const [plantaExistente] = await db
     .select()
@@ -107,6 +116,23 @@ export async function seed(db: ForjaDb): Promise<void> {
   }
 }
 
+async function sembrarUsuariosDev(db: ForjaDb): Promise<void> {
+  const hasher = new Argon2Hasher();
+  const passwordHash = await hasher.hash(CONTRASENA_DEV);
+
+  await db
+    .insert(appUser)
+    .values(
+      USUARIOS_DEV.map((u) => ({
+        email: u.email,
+        nombre: u.nombre,
+        roleId: u.rol,
+        passwordHash,
+      })),
+    )
+    .onConflictDoNothing({ target: appUser.email });
+}
+
 async function sembrarLecturasSinteticas(
   db: ForjaDb,
   sensores: Array<{ id: string; rangoMin: number; rangoMax: number }>,
@@ -137,7 +163,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const { db, cerrar } = crearCliente(databaseUrl());
   seed(db)
     .then(() => {
-      console.log("Seed aplicado.");
+      console.log(`Seed aplicado. Usuarios de desarrollo (contraseña: ${CONTRASENA_DEV}):`);
+      for (const u of USUARIOS_DEV) console.log(`  - ${u.rol}: ${u.email}`);
       return cerrar();
     })
     .then(() => process.exit(0))

@@ -1,10 +1,16 @@
 # @forja/db
 
-Esquema Drizzle, migraciones y repositorios sobre Postgres 16 + TimescaleDB + pgvector. Implementa los puertos que declara `@forja/core` (ninguno todavía; se agregan en specs posteriores).
+Esquema Drizzle, migraciones y repositorios sobre Postgres 16 + TimescaleDB + pgvector. Implementa los puertos que declara `@forja/core`.
 
-## Tablas (spec 10 — fundación)
+## Tablas
 
-`plant`, `area`, `machine_family`, `machine`, `sensor`, `reading` (hypertable de Timescale por `ts`), `role`, `app_user`, `agent_trace`.
+Spec 10 (fundación): `plant`, `area`, `machine_family`, `machine`, `sensor`, `reading` (hypertable de Timescale por `ts`), `role`, `app_user`, `agent_trace`.
+
+Spec 11 (auth): `session`, `audit_log`, `login_attempt`.
+
+## Repositorios (spec 11)
+
+`RepositorioUsuariosDrizzle`, `RepositorioSesionesDrizzle`, `RepositorioIntentosLoginDrizzle`, `RegistradorAuditoriaDrizzle`, `Argon2Hasher` — implementan los puertos de `@forja/core` para autenticación. `RepositorioSesiones` tiene suite de contrato (`src/__tests__/contracts/`) que corre igual contra la versión en memoria y la de Drizzle.
 
 ## Comandos
 

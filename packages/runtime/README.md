@@ -2,4 +2,6 @@
 
 Loop del agente, registro de herramientas (Registry), políticas de ejecución.
 
-> Paquete en fundación (spec 10): estructura y build listos; los casos de uso se agregan en specs posteriores.
+- `RegistroHerramientas` (spec 11): Registry de herramientas filtrado por rol — `disponiblesPara(rol)` solo devuelve las herramientas cuyo `rolesPermitidos` incluye ese rol. Es la pieza que consumirá el loop del agente.
+
+> El loop del agente (invocación del LLM, herramientas concretas, workspace) llega en la spec 12.

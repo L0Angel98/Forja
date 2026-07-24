@@ -7,3 +7,6 @@ export * from "./reading";
 export * from "./role";
 export * from "./app-user";
 export * from "./agent-trace";
+export * from "./session";
+export * from "./audit-log";
+export * from "./login-attempt";

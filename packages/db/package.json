@@ -16,7 +16,9 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "@forja/core": "workspace:*",
     "@forja/shared": "workspace:*",
+    "argon2": "^0.41.1",
     "drizzle-orm": "^0.38.4",
     "postgres": "^3.4.5"
   },
