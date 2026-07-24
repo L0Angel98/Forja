@@ -45,6 +45,10 @@ import { MAXIMO_PUNTOS_SERIE, type Bucket, type PuntoSerieAgregada, type TipoAgr
 import type { ParametrosConsultaAgregada, RepositorioAgregacionesSensores } from "../ports/repositorio-agregaciones-sensores";
 import type { EstadoIngesta } from "../entities/estado-ingesta";
 import type { RepositorioEstadoIngesta } from "../ports/repositorio-estado-ingesta";
+import type { CatalogoHerramientas } from "../ports/catalogo-herramientas";
+import type { EjecucionRutina } from "../entities/ejecucion-rutina";
+import type { RepositorioEjecucionesRutina } from "../ports/repositorio-ejecuciones-rutina";
+import type { CanalSalidaEnviador, ParametrosEnvioCanal } from "../ports/canal-salida-enviador";
 
 export function crearRepositorioUsuariosMemoria(usuariosIniciales: Usuario[] = []): RepositorioUsuarios & {
   usuarios: Map<string, Usuario>;
@@ -611,6 +615,58 @@ export function crearRepositorioEstadoIngestaFalso(): RepositorioEstadoIngesta &
     },
     async obtener() {
       return estado.valor;
+    },
+  };
+}
+
+/** `herramientas` mapea nombre -> soloLectura. */
+export function crearCatalogoHerramientasFalso(
+  herramientas: Record<string, boolean> = {},
+): CatalogoHerramientas & { herramientas: Map<string, boolean> } {
+  const mapa = new Map(Object.entries(herramientas));
+  return {
+    herramientas: mapa,
+    existe(nombre) {
+      return mapa.has(nombre);
+    },
+    esSoloLectura(nombre) {
+      return mapa.get(nombre) ?? false;
+    },
+  };
+}
+
+export function crearRepositorioEjecucionesRutinaFalso(): RepositorioEjecucionesRutina & {
+  ejecuciones: EjecucionRutina[];
+} {
+  const ejecuciones: EjecucionRutina[] = [];
+  return {
+    ejecuciones,
+    async crear(ejecucion) {
+      ejecuciones.push(ejecucion);
+    },
+    async listarPorRutina(rutinaNombre, limite) {
+      return ejecuciones
+        .filter((e) => e.rutinaNombre === rutinaNombre)
+        .sort((a, b) => b.iniciadaEn.getTime() - a.iniciadaEn.getTime())
+        .slice(0, limite);
+    },
+    async hayEnCurso(rutinaNombre) {
+      return ejecuciones.some((e) => e.rutinaNombre === rutinaNombre && e.finalizadaEn === null);
+    },
+    async tokensUsadosDesde(plantId, desde) {
+      return ejecuciones
+        .filter((e) => e.plantId === plantId && e.iniciadaEn >= desde)
+        .reduce((total, e) => total + e.tokensUsados, 0);
+    },
+  };
+}
+
+export function crearCanalSalidaEnviadorFalso(): CanalSalidaEnviador & { envios: ParametrosEnvioCanal[] } {
+  const envios: ParametrosEnvioCanal[] = [];
+  return {
+    envios,
+    async enviar(params) {
+      envios.push(params);
     },
   };
 }
