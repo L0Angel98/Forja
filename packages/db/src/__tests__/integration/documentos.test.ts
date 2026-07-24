@@ -23,15 +23,29 @@ function rellenar(v: readonly number[]): number[] {
   return salida;
 }
 
-/** Rellena embeddings de baja dimensión (como los del contrato) a la dimensión real de la columna vector. */
-function repositorioChunksConRelleno(real: RepositorioChunksDrizzle) {
+/**
+ * Rellena embeddings de baja dimensión (como los del contrato) a la
+ * dimensión real de la columna vector, y traduce las claves de área del
+ * contrato ("area-a", "area-b") a los uuid reales ya creados por
+ * `resolverAreaId` — el contrato llama a `buscarSimilares` directamente
+ * con esas claves, no con ids reales.
+ */
+function repositorioChunksConRelleno(
+  real: RepositorioChunksDrizzle,
+  resolverAreaId: (clave: string) => Promise<string>,
+) {
   return {
     crearMuchos: (chunks: Parameters<RepositorioChunksDrizzle["crearMuchos"]>[0]) =>
       real.crearMuchos(chunks.map((c) => ({ ...c, embedding: rellenar(c.embedding) }))),
     buscarPorDocumento: (id: string) => real.buscarPorDocumento(id),
     marcarNoVigentesPorDocumento: (id: string) => real.marcarNoVigentesPorDocumento(id),
-    buscarSimilares: (embeddingConsulta: readonly number[], filtros: Parameters<RepositorioChunksDrizzle["buscarSimilares"]>[1]) =>
-      real.buscarSimilares(rellenar(embeddingConsulta), filtros),
+    async buscarSimilares(
+      embeddingConsulta: readonly number[],
+      filtros: Parameters<RepositorioChunksDrizzle["buscarSimilares"]>[1],
+    ) {
+      const areaIds = filtros.areaIds ? await Promise.all(filtros.areaIds.map(resolverAreaId)) : undefined;
+      return real.buscarSimilares(rellenar(embeddingConsulta), { ...filtros, ...(areaIds ? { areaIds } : {}) });
+    },
   };
 }
 
@@ -203,7 +217,6 @@ describe("documentos y RAG (Postgres real)", () => {
 
   pruebasDeContratoFiltroAreaRepositorioChunks("drizzle", () => {
     const documentos = new RepositorioDocumentosDrizzle(db);
-    const chunks = repositorioChunksConRelleno(new RepositorioChunksDrizzle(db));
     const areasPorClave = new Map<string, string>();
 
     async function resolverAreaId(clave: string): Promise<string> {
@@ -216,6 +229,8 @@ describe("documentos y RAG (Postgres real)", () => {
       areasPorClave.set(clave, fila!.id);
       return fila!.id;
     }
+
+    const chunks = repositorioChunksConRelleno(new RepositorioChunksDrizzle(db), resolverAreaId);
 
     return {
       chunks,
