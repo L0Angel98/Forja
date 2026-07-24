@@ -1,0 +1,20 @@
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-8);
+  padding: var(--espacio-4) var(--espacio-12);
+  border-radius: var(--radio-control);
+  font-family: var(--fuente-display);
+  font-weight: 600;
+  font-size: var(--texto-sm);
+  color: var(--acero-050);
+  background: color-mix(in srgb, var(--color-severidad) 22%, var(--acero-900));
+  border: 1px solid var(--color-severidad);
+}
+
+.icono {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  color: var(--color-severidad);
+}

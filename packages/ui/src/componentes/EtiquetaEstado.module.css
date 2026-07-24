@@ -1,0 +1,20 @@
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-8);
+  padding: var(--espacio-4) var(--espacio-12);
+  border-radius: var(--radio-control);
+  font-family: var(--fuente-display);
+  font-weight: 600;
+  font-size: var(--texto-sm);
+  color: var(--acero-050);
+  background: var(--acero-700);
+}
+
+.punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-tono);
+}

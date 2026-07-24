@@ -7,3 +7,6 @@ export * from "./componentes/Boton";
 export * from "./componentes/Campo";
 export * from "./componentes/Select";
 export * from "./componentes/Textarea";
+export * from "./componentes/EtiquetaSeveridad";
+export * from "./componentes/EtiquetaEstado";
+export * from "./componentes/TarjetaMaquina";
