@@ -11,3 +11,10 @@ export { RepositorioIntentosLoginDrizzle } from "./repositories/repositorio-inte
 export { RegistradorAuditoriaDrizzle } from "./repositories/registrador-auditoria-drizzle";
 export { RepositorioSugerenciasMemoriaDrizzle } from "./repositories/repositorio-sugerencias-memoria-drizzle";
 export { RegistradorTraceDrizzle } from "./repositories/registrador-trace-drizzle";
+export { RepositorioMaquinasDrizzle } from "./repositories/repositorio-maquinas-drizzle";
+export { RepositorioAreasUsuarioDrizzle } from "./repositories/repositorio-areas-usuario-drizzle";
+export { RepositorioFallasDrizzle } from "./repositories/repositorio-fallas-drizzle";
+export { RepositorioSensoresPorMaquinaDrizzle } from "./repositories/repositorio-sensores-por-maquina-drizzle";
+export { RepositorioLecturasVentanaDrizzle } from "./repositories/repositorio-lecturas-ventana-drizzle";
+export { RepositorioSnapshotsFallaDrizzle } from "./repositories/repositorio-snapshots-falla-drizzle";
+export { RepositorioNotificacionesDrizzle } from "./repositories/repositorio-notificaciones-drizzle";

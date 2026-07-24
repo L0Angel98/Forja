@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { Argon2Hasher } from "./auth/argon2-hasher";
 import { crearCliente } from "./client";
 import { databaseUrl } from "./env";
-import { appUser, area, machine, plant, role, ROLES, sensor, reading } from "./schema/index";
+import { appUser, area, machine, plant, role, ROLES, sensor, reading, userArea } from "./schema/index";
 import type { ForjaDb } from "./client";
 
 const NOMBRE_PLANTA = "Planta Demo";
@@ -44,6 +44,8 @@ export async function seed(db: ForjaDb): Promise<void> {
     throw new Error("No se pudo crear/leer la planta semilla.");
   }
 
+  let areaEnsambleId: string | undefined;
+
   for (const nombreArea of NOMBRES_AREAS) {
     const [areaExistente] = await db
       .select()
@@ -59,6 +61,10 @@ export async function seed(db: ForjaDb): Promise<void> {
 
     if (!areaActual) {
       throw new Error(`No se pudo crear/leer el área semilla "${nombreArea}".`);
+    }
+
+    if (nombreArea === "Ensamble") {
+      areaEnsambleId = areaActual.id;
     }
 
     for (const nombreMaquina of MAQUINAS_POR_AREA[nombreArea]) {
@@ -112,6 +118,21 @@ export async function seed(db: ForjaDb): Promise<void> {
 
         await sembrarLecturasSinteticas(db, nuevosSensores);
       }
+    }
+  }
+
+  if (areaEnsambleId) {
+    const [operadorDemo] = await db
+      .select()
+      .from(appUser)
+      .where(eq(appUser.email, "operador@forja.local"))
+      .limit(1);
+
+    if (operadorDemo) {
+      await db
+        .insert(userArea)
+        .values({ userId: operadorDemo.id, areaId: areaEnsambleId })
+        .onConflictDoNothing();
     }
   }
 }

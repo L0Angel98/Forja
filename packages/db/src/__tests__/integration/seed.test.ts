@@ -1,10 +1,10 @@
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearCliente, type ForjaDb } from "../../client";
 import { ejecutarMigraciones } from "../../migrate";
 import { seed } from "../../seed";
-import { area, machine, plant, sensor } from "../../schema/index";
+import { appUser, area, machine, plant, sensor, userArea } from "../../schema/index";
 
 describe("seed de desarrollo", () => {
   let contenedor: StartedPostgreSqlContainer | undefined;
@@ -45,6 +45,10 @@ describe("seed de desarrollo", () => {
     expect(areas).toHaveLength(2);
     expect(maquinas).toHaveLength(5);
     expect(sensores).toHaveLength(10);
+
+    const [operadorDemo] = await db.select().from(appUser).where(eq(appUser.email, "operador@forja.local")).limit(1);
+    const asignaciones = await db.select().from(userArea).where(eq(userArea.userId, operadorDemo!.id));
+    expect(asignaciones).toHaveLength(1);
   }, 60_000);
 
   it("responde una agregación de 7 días para un sensor en menos de 200ms", async () => {

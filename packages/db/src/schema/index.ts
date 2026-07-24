@@ -11,3 +11,7 @@ export * from "./session";
 export * from "./audit-log";
 export * from "./login-attempt";
 export * from "./memory-suggestion";
+export * from "./failure-report";
+export * from "./failure-sensor-snapshot";
+export * from "./notification";
+export * from "./user-area";
