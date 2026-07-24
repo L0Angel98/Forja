@@ -1,15 +1,21 @@
 import { randomUUID } from "node:crypto";
 import {
   BusEventos,
+  crearAlmacenArchivosFalso,
   crearEscritorArchivosWorkspaceFalso,
   crearEscritorMemoriaFalso,
+  crearExtractorTextoFalso,
+  crearGeneradorEmbeddingsFalso,
   crearHasherContrasenasFalso,
   crearColaTrabajosFalso,
   crearProveedorLLMFalso,
   crearRegistradorAuditoriaMemoria,
   crearRegistradorTraceFalso,
   crearRepositorioAreasUsuarioFalso,
+  crearRepositorioChunksFalso,
+  crearRepositorioDocumentosFalso,
   crearRepositorioFallasFalso,
+  crearRepositorioFeedbackFalso,
   crearRepositorioIntentosLoginMemoria,
   crearRepositorioLecturasVentanaFalso,
   crearRepositorioMaquinasFalso,
@@ -20,10 +26,16 @@ import {
   crearRepositorioSugerenciasMemoriaFalso,
   crearRepositorioUsuariosMemoria,
   type ConfiguracionWorkspace,
+  type EstrategiaChunking,
+  type SelectorEstrategiaChunking,
   type Usuario,
 } from "@forja/core";
 import { RegistroHerramientas, type IWorkspaceLoader } from "@forja/runtime";
-import { crearHerramientaCrearReporteFalla, crearHerramientaProponerMemoria } from "@forja/tools";
+import {
+  crearHerramientaBuscarDocumentos,
+  crearHerramientaCrearReporteFalla,
+  crearHerramientaProponerMemoria,
+} from "@forja/tools";
 import type { ComposicionAuth } from "../auth/composicion";
 import type { ComposicionRuntime } from "../runtime/composicion";
 
@@ -69,6 +81,16 @@ function crearWorkspaceLoaderFalso(configInicial: ConfiguracionWorkspace): IWork
   };
 }
 
+const ESTRATEGIA_FALSA: EstrategiaChunking = {
+  nombre: "falsa",
+  trocear: (textoExtraido) =>
+    textoExtraido.texto.trim() ? [{ contenido: textoExtraido.texto.trim(), seccion: null, pagina: null }] : [],
+};
+
+function crearSelectorEstrategiaFalso(): SelectorEstrategiaChunking {
+  return { seleccionar: () => ESTRATEGIA_FALSA };
+}
+
 export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   sugerenciasMemoriaRepo: ReturnType<typeof crearRepositorioSugerenciasMemoriaFalso>;
   escritorMemoriaFalso: ReturnType<typeof crearEscritorMemoriaFalso>;
@@ -78,6 +100,10 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   fallasRepo: ReturnType<typeof crearRepositorioFallasFalso>;
   colaFalsa: ReturnType<typeof crearColaTrabajosFalso>;
   notificacionesRepo: ReturnType<typeof crearRepositorioNotificacionesFalso>;
+  documentosRepo: ReturnType<typeof crearRepositorioDocumentosFalso>;
+  chunksRepo: ReturnType<typeof crearRepositorioChunksFalso>;
+  feedbackRepo: ReturnType<typeof crearRepositorioFeedbackFalso>;
+  almacenFalso: ReturnType<typeof crearAlmacenArchivosFalso>;
 } {
   const sugerenciasMemoriaRepo = crearRepositorioSugerenciasMemoriaFalso();
   const escritorMemoriaFalso = crearEscritorMemoriaFalso();
@@ -89,8 +115,13 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   const lecturasVentana = crearRepositorioLecturasVentanaFalso();
   const snapshotsFalla = crearRepositorioSnapshotsFallaFalso();
   const notificacionesRepo = crearRepositorioNotificacionesFalso();
+  const documentosRepo = crearRepositorioDocumentosFalso();
+  const chunksRepo = crearRepositorioChunksFalso(documentosRepo.documentos);
+  const feedbackRepo = crearRepositorioFeedbackFalso();
+  const almacenFalso = crearAlmacenArchivosFalso();
   const colaFalsa = crearColaTrabajosFalso();
   const bus = new BusEventos();
+  const embeddings = crearGeneradorEmbeddingsFalso();
 
   const registroHerramientas = new RegistroHerramientas();
   registroHerramientas.registrar(
@@ -98,6 +129,9 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   );
   registroHerramientas.registrar(
     crearHerramientaCrearReporteFalla({ maquinas: maquinasRepo, areasUsuario: areasUsuarioRepo }),
+  );
+  registroHerramientas.registrar(
+    crearHerramientaBuscarDocumentos({ embeddings, chunks: chunksRepo, areasUsuario: areasUsuarioRepo }),
   );
 
   return {
@@ -122,6 +156,13 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
     lecturasVentana,
     snapshotsFalla,
     notificaciones: notificacionesRepo,
+    documentos: documentosRepo,
+    chunks: chunksRepo,
+    feedback: feedbackRepo,
+    almacen: almacenFalso,
+    extractor: crearExtractorTextoFalso(),
+    selectorEstrategia: crearSelectorEstrategiaFalso(),
+    embeddings,
     cola: colaFalsa,
     bus,
     horasVentanaSnapshot: 4,
@@ -134,5 +175,9 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
     fallasRepo,
     colaFalsa,
     notificacionesRepo,
+    documentosRepo,
+    chunksRepo,
+    feedbackRepo,
+    almacenFalso,
   };
 }
