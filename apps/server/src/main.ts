@@ -36,6 +36,7 @@ async function main(): Promise<void> {
 
   const cerrar = async () => {
     runtime.workspaceLoader.detener();
+    runtime.programadorRutinas.detener();
     await app.close();
     await boss.stop();
     await cerrarDb();

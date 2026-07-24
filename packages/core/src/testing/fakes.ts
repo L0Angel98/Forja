@@ -49,6 +49,7 @@ import type { CatalogoHerramientas } from "../ports/catalogo-herramientas";
 import type { EjecucionRutina } from "../entities/ejecucion-rutina";
 import type { RepositorioEjecucionesRutina } from "../ports/repositorio-ejecuciones-rutina";
 import type { CanalSalidaEnviador, ParametrosEnvioCanal } from "../ports/canal-salida-enviador";
+import type { EscritorArchivosRutinas } from "../ports/escritor-archivos-rutinas";
 
 export function crearRepositorioUsuariosMemoria(usuariosIniciales: Usuario[] = []): RepositorioUsuarios & {
   usuarios: Map<string, Usuario>;
@@ -667,6 +668,27 @@ export function crearCanalSalidaEnviadorFalso(): CanalSalidaEnviador & { envios:
     envios,
     async enviar(params) {
       envios.push(params);
+    },
+  };
+}
+
+export function crearEscritorArchivosRutinasFalso(
+  contenidoInicial: Record<string, string> = {},
+): EscritorArchivosRutinas & { archivos: Map<string, string> } {
+  const archivos = new Map(Object.entries(contenidoInicial));
+  return {
+    archivos,
+    async listar() {
+      return [...archivos.keys()];
+    },
+    async leer(nombre) {
+      return archivos.get(nombre) ?? null;
+    },
+    async escribir(nombre, contenido) {
+      archivos.set(nombre, contenido);
+    },
+    async eliminar(nombre) {
+      archivos.delete(nombre);
     },
   };
 }

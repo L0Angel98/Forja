@@ -1,9 +1,11 @@
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 import type {
   AlmacenArchivos,
   BusEventos as TipoBusEventos,
   ColaTrabajos,
   EscritorMemoria,
+  EscritorArchivosRutinas,
   EscritorArchivosWorkspace,
   ExtractorTexto,
   GeneradorEmbeddings,
@@ -15,6 +17,7 @@ import type {
   RepositorioChunks,
   RepositorioCuarentena,
   RepositorioDocumentos,
+  RepositorioEjecucionesRutina,
   RepositorioEstadoIngesta,
   RepositorioFallas,
   RepositorioFeedback,
@@ -37,6 +40,7 @@ import {
   RepositorioChunksDrizzle,
   RepositorioCuarentenaDrizzle,
   RepositorioDocumentosDrizzle,
+  RepositorioEjecucionesRutinaDrizzle,
   RepositorioEstadoIngestaDrizzle,
   RepositorioFallasDrizzle,
   RepositorioFeedbackDrizzle,
@@ -53,8 +57,16 @@ import { VercelAiGeneradorEmbeddings, VercelAiProveedorLLM } from "@forja/llm";
 import { ExtractorTextoForja, RegistroEstrategiasChunking } from "@forja/rag";
 import {
   AlmacenArchivosFs,
+  cargarRutinasDesdeDirectorio,
+  EnviadorCorreoNoConfigurado,
+  EnviadorUiNoOp,
+  EnviadorWebhookHttp,
+  EscritorArchivosRutinasFs,
   EscritorArchivosWorkspaceFs,
   EscritorMemoriaFs,
+  ejecutarRutina,
+  ProgramadorRutinas,
+  RegistroCanalesSalida,
   RegistroHerramientas,
   WorkspaceLoader,
   type IWorkspaceLoader,
@@ -76,6 +88,8 @@ import { ProveedorLLMNoConfigurado } from "./llm-no-configurado";
 const HORAS_VENTANA_SNAPSHOT_POR_DEFECTO = 4;
 const MODELO_ANTHROPIC_POR_DEFECTO = "claude-3-5-sonnet-latest";
 const MODELO_EMBEDDINGS_OPENAI_POR_DEFECTO = "text-embedding-3-small";
+const PRESUPUESTO_MAXIMO_POR_EJECUCION_POR_DEFECTO = 100_000;
+const PRESUPUESTO_MENSUAL_GLOBAL_POR_DEFECTO = 2_000_000;
 
 export interface ComposicionRuntime {
   plantId: string;
@@ -109,6 +123,11 @@ export interface ComposicionRuntime {
   bus: TipoBusEventos;
   horasVentanaSnapshot: number;
   generarId: () => string;
+  ejecucionesRutina: RepositorioEjecucionesRutina;
+  escritorRutinas: EscritorArchivosRutinas;
+  canalesSalida: RegistroCanalesSalida;
+  programadorRutinas: ProgramadorRutinas;
+  presupuestoMaximoPorEjecucion: number;
 }
 
 function construirProveedorLLM(): ProveedorLLM {
@@ -136,7 +155,6 @@ export async function construirComposicionRuntime(
     );
   }
 
-  const workspaceLoader = await WorkspaceLoader.iniciar({ directorio: directorioWorkspace });
   const sugerenciasMemoria = new RepositorioSugerenciasMemoriaDrizzle(db);
   const maquinas = new RepositorioMaquinasDrizzle(db);
   const areasUsuario = new RepositorioAreasUsuarioDrizzle(db);
@@ -153,12 +171,15 @@ export async function construirComposicionRuntime(
   const cuarentena = new RepositorioCuarentenaDrizzle(db);
   const agregacionesSensores = new RepositorioAgregacionesSensoresDrizzle(db);
   const estadoIngesta = new RepositorioEstadoIngestaDrizzle(db);
+  const ejecucionesRutina = new RepositorioEjecucionesRutinaDrizzle(db);
   const almacen = new AlmacenArchivosFs(directorioDocumentos);
   const extractor = new ExtractorTextoForja();
   const selectorEstrategia = new RegistroEstrategiasChunking();
   const embeddings = construirGeneradorEmbeddings();
   const cola = new ColaTrabajosPgBoss(boss);
   const bus = new BusEventos();
+  const trace = new RegistradorTraceDrizzle(db);
+  const llm = construirProveedorLLM();
 
   registrarManejadoresFalla(bus, { cola, notificaciones, generarId: randomUUID });
 
@@ -175,15 +196,53 @@ export async function construirComposicionRuntime(
     crearHerramientaConsultarEstadoSensores({ maquinas, areasUsuario, catalogo: catalogoSensores, lecturas }),
   );
 
+  const canalesSalida = new RegistroCanalesSalida();
+  canalesSalida.registrar("ui", new EnviadorUiNoOp());
+  canalesSalida.registrar("webhook", new EnviadorWebhookHttp());
+  canalesSalida.registrar("correo", new EnviadorCorreoNoConfigurado());
+
+  const presupuestoMaximoPorEjecucion = Number(
+    process.env["RUTINAS_PRESUPUESTO_MAXIMO_POR_EJECUCION"] ?? PRESUPUESTO_MAXIMO_POR_EJECUCION_POR_DEFECTO,
+  );
+  const presupuestoMensualGlobal = Number(
+    process.env["RUTINAS_PRESUPUESTO_MENSUAL_GLOBAL"] ?? PRESUPUESTO_MENSUAL_GLOBAL_POR_DEFECTO,
+  );
+  const directorioRutinas = path.join(directorioWorkspace, "rutinas");
+  const escritorRutinas = new EscritorArchivosRutinasFs(directorioRutinas);
+
+  const programadorRutinas = new ProgramadorRutinas({
+    cargarRutinas: () =>
+      cargarRutinasDesdeDirectorio(directorioRutinas, {
+        catalogoHerramientas: registroHerramientas,
+        presupuestoMaximoGlobal: presupuestoMaximoPorEjecucion,
+      }),
+    ejecutar: async (rutina) => {
+      const config = workspaceLoader.obtenerConfiguracion();
+      const systemPrompt = [config.soul, config.planta, config.memoria].filter((s) => s.trim().length > 0).join("\n\n");
+      await ejecutarRutina(
+        { registro: registroHerramientas, llm, trace, ejecuciones: ejecucionesRutina, canales: canalesSalida, generarId: randomUUID, presupuestoMensualGlobal },
+        { rutina, plantId: planta.id, systemPrompt, ahora: new Date() },
+      );
+    },
+  });
+
+  const workspaceLoader = await WorkspaceLoader.iniciar({
+    directorio: directorioWorkspace,
+    onRecargar: () => {
+      void programadorRutinas.recargar();
+    },
+  });
+  await programadorRutinas.iniciar();
+
   return {
     plantId: planta.id,
     workspaceLoader,
     registroHerramientas,
-    trace: new RegistradorTraceDrizzle(db),
+    trace,
     sugerenciasMemoria,
     escritorMemoria: new EscritorMemoriaFs(directorioWorkspace),
     escritorWorkspace: new EscritorArchivosWorkspaceFs(directorioWorkspace),
-    llm: construirProveedorLLM(),
+    llm,
     maquinas,
     areasUsuario,
     fallas,
@@ -207,5 +266,10 @@ export async function construirComposicionRuntime(
     bus,
     horasVentanaSnapshot: HORAS_VENTANA_SNAPSHOT_POR_DEFECTO,
     generarId: randomUUID,
+    ejecucionesRutina,
+    escritorRutinas,
+    canalesSalida,
+    programadorRutinas,
+    presupuestoMaximoPorEjecucion,
   };
 }

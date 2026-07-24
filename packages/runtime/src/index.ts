@@ -14,3 +14,4 @@ export * from "./rutinas/enviador-webhook-http";
 export * from "./rutinas/enviador-correo-no-configurado";
 export * from "./rutinas/cargar-rutinas-desde-directorio";
 export * from "./rutinas/programador-rutinas";
+export * from "./rutinas/escritor-archivos-rutinas-fs";

@@ -6,6 +6,8 @@ import {
   crearEscritorMemoriaFalso,
   crearExtractorTextoFalso,
   crearGeneradorEmbeddingsFalso,
+  crearCanalSalidaEnviadorFalso,
+  crearEscritorArchivosRutinasFalso,
   crearHasherContrasenasFalso,
   crearColaTrabajosFalso,
   crearProveedorLLMFalso,
@@ -17,6 +19,7 @@ import {
   crearRepositorioChunksFalso,
   crearRepositorioCuarentenaFalso,
   crearRepositorioDocumentosFalso,
+  crearRepositorioEjecucionesRutinaFalso,
   crearRepositorioEstadoIngestaFalso,
   crearRepositorioFallasFalso,
   crearRepositorioFeedbackFalso,
@@ -35,7 +38,7 @@ import {
   type SelectorEstrategiaChunking,
   type Usuario,
 } from "@forja/core";
-import { RegistroHerramientas, type IWorkspaceLoader } from "@forja/runtime";
+import { ProgramadorRutinas, RegistroCanalesSalida, RegistroHerramientas, type IWorkspaceLoader } from "@forja/runtime";
 import {
   crearHerramientaBuscarDocumentos,
   crearHerramientaConsultarEstadoSensores,
@@ -116,6 +119,8 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   agregacionesSensoresRepo: ReturnType<typeof crearRepositorioAgregacionesSensoresFalso>;
   estadoIngestaRepo: ReturnType<typeof crearRepositorioEstadoIngestaFalso>;
   almacenFalso: ReturnType<typeof crearAlmacenArchivosFalso>;
+  ejecucionesRutinaRepo: ReturnType<typeof crearRepositorioEjecucionesRutinaFalso>;
+  escritorRutinasFalso: ReturnType<typeof crearEscritorArchivosRutinasFalso>;
 } {
   const sugerenciasMemoriaRepo = crearRepositorioSugerenciasMemoriaFalso();
   const escritorMemoriaFalso = crearEscritorMemoriaFalso();
@@ -139,6 +144,16 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   const colaFalsa = crearColaTrabajosFalso();
   const bus = new BusEventos();
   const embeddings = crearGeneradorEmbeddingsFalso();
+  const ejecucionesRutinaRepo = crearRepositorioEjecucionesRutinaFalso();
+  const escritorRutinasFalso = crearEscritorArchivosRutinasFalso();
+  const canalesSalida = new RegistroCanalesSalida();
+  canalesSalida.registrar("ui", crearCanalSalidaEnviadorFalso());
+  const programadorRutinas = new ProgramadorRutinas({
+    cargarRutinas: async () => ({ rutinas: [], errores: [] }),
+    ejecutar: async () => {
+      // no-op en pruebas
+    },
+  });
 
   const registroHerramientas = new RegistroHerramientas();
   registroHerramientas.registrar(
@@ -205,6 +220,11 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
     bus,
     horasVentanaSnapshot: 4,
     generarId: randomUUID,
+    ejecucionesRutina: ejecucionesRutinaRepo,
+    escritorRutinas: escritorRutinasFalso,
+    canalesSalida,
+    programadorRutinas,
+    presupuestoMaximoPorEjecucion: 100_000,
     sugerenciasMemoriaRepo,
     escritorMemoriaFalso,
     escritorWorkspaceFalso,
@@ -222,5 +242,7 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
     agregacionesSensoresRepo,
     estadoIngestaRepo,
     almacenFalso,
+    ejecucionesRutinaRepo,
+    escritorRutinasFalso,
   };
 }
