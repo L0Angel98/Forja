@@ -15,3 +15,5 @@ export * from "./correo/servidor-correo-smtp";
 export * from "./correo/canal-salida-enviador-correo-smtp";
 
 export * from "./webhook/servidor-webhook";
+
+export * from "./factory-conectores";
