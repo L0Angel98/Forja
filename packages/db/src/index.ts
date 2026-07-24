@@ -18,3 +18,6 @@ export { RepositorioSensoresPorMaquinaDrizzle } from "./repositories/repositorio
 export { RepositorioLecturasVentanaDrizzle } from "./repositories/repositorio-lecturas-ventana-drizzle";
 export { RepositorioSnapshotsFallaDrizzle } from "./repositories/repositorio-snapshots-falla-drizzle";
 export { RepositorioNotificacionesDrizzle } from "./repositories/repositorio-notificaciones-drizzle";
+export { RepositorioDocumentosDrizzle } from "./repositories/repositorio-documentos-drizzle";
+export { RepositorioChunksDrizzle } from "./repositories/repositorio-chunks-drizzle";
+export { RepositorioFeedbackDrizzle } from "./repositories/repositorio-feedback-drizzle";

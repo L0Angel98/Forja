@@ -43,6 +43,20 @@
       "when": 1784899489167,
       "tag": "0005_fresh_guardsmen",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784903095868,
+      "tag": "0006_fuzzy_skrulls",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784903111297,
+      "tag": "0007_document_chunk_embedding_index",
+      "breakpoints": true
     }
   ]
 }
