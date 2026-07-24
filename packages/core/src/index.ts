@@ -16,10 +16,17 @@ export * from "./entities/notificacion";
 export * from "./entities/documento";
 export * from "./entities/chunk-documento";
 export * from "./entities/feedback-respuesta";
+export * from "./entities/lectura-ingerida";
+export * from "./entities/lectura-cuarentena";
+export * from "./entities/sensor-catalogo";
+export * from "./entities/agregacion-sensor";
+export * from "./entities/sensor-mudo";
+export * from "./entities/estado-ingesta";
 export * from "./permisos";
 export * from "./politica-bloqueo-login";
 export * from "./diff-lineas";
 export * from "./estado-falla";
+export * from "./clasificar-lectura";
 export * from "./config/sesion";
 
 export * from "./errors/credenciales-invalidas";
@@ -41,6 +48,8 @@ export * from "./errors/formato-documento-no-soportado";
 export * from "./errors/documento-demasiado-grande";
 export * from "./errors/documento-sin-asociacion";
 export * from "./errors/documento-no-encontrado";
+export * from "./errors/rango-consulta-demasiado-amplio";
+export * from "./errors/sensor-no-encontrado";
 
 export * from "./events/bus-eventos";
 export * from "./events/falla-reportada";

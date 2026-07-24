@@ -29,3 +29,8 @@ export type { GeneradorEmbeddings } from "./generador-embeddings";
 export type { FiltrosListarDocumentos, RepositorioDocumentos } from "./repositorio-documentos";
 export type { FiltrosBuscarSimilares, RepositorioChunks } from "./repositorio-chunks";
 export type { RepositorioFeedback } from "./repositorio-feedback";
+export type { RepositorioLecturas } from "./repositorio-lecturas";
+export type { RepositorioCuarentena } from "./repositorio-cuarentena";
+export type { RepositorioCatalogoSensores } from "./repositorio-catalogo-sensores";
+export type { ParametrosConsultaAgregada, RepositorioAgregacionesSensores } from "./repositorio-agregaciones-sensores";
+export type { RepositorioEstadoIngesta } from "./repositorio-estado-ingesta";

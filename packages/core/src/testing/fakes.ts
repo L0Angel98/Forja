@@ -35,6 +35,16 @@ import type { ExtractorTexto, TextoExtraido } from "../ports/extractor-texto";
 import type { GeneradorEmbeddings } from "../ports/generador-embeddings";
 import type { FeedbackRespuesta } from "../entities/feedback-respuesta";
 import type { RepositorioFeedback } from "../ports/repositorio-feedback";
+import type { LecturaIngerida } from "../entities/lectura-ingerida";
+import type { RepositorioLecturas } from "../ports/repositorio-lecturas";
+import type { LecturaCuarentena } from "../entities/lectura-cuarentena";
+import type { RepositorioCuarentena } from "../ports/repositorio-cuarentena";
+import type { SensorCatalogo } from "../entities/sensor-catalogo";
+import type { RepositorioCatalogoSensores } from "../ports/repositorio-catalogo-sensores";
+import { MAXIMO_PUNTOS_SERIE, type Bucket, type PuntoSerieAgregada, type TipoAgregacion } from "../entities/agregacion-sensor";
+import type { ParametrosConsultaAgregada, RepositorioAgregacionesSensores } from "../ports/repositorio-agregaciones-sensores";
+import type { EstadoIngesta } from "../entities/estado-ingesta";
+import type { RepositorioEstadoIngesta } from "../ports/repositorio-estado-ingesta";
 
 export function crearRepositorioUsuariosMemoria(usuariosIniciales: Usuario[] = []): RepositorioUsuarios & {
   usuarios: Map<string, Usuario>;
@@ -474,6 +484,133 @@ export function crearRepositorioFeedbackFalso(): RepositorioFeedback & { feedbac
     feedbacks,
     async crear(feedback) {
       feedbacks.push(feedback);
+    },
+  };
+}
+
+export function crearRepositorioLecturasFalso(): RepositorioLecturas & { lecturas: LecturaIngerida[] } {
+  const lecturas: LecturaIngerida[] = [];
+  return {
+    lecturas,
+    async insertarLote(nuevas) {
+      lecturas.push(...nuevas);
+    },
+    async ultimaLecturaEn(sensorId) {
+      const delSensor = lecturas.filter((l) => l.sensorId === sensorId);
+      if (delSensor.length === 0) return null;
+      return delSensor.reduce((max, l) => (l.ts > max ? l.ts : max), delSensor[0]!.ts);
+    },
+  };
+}
+
+export function crearRepositorioCuarentenaFalso(): RepositorioCuarentena & { registros: LecturaCuarentena[] } {
+  const registros: LecturaCuarentena[] = [];
+  return {
+    registros,
+    async crear(lectura) {
+      registros.push(lectura);
+    },
+    async contar() {
+      return registros.length;
+    },
+  };
+}
+
+export function crearRepositorioCatalogoSensoresFalso(
+  sensoresIniciales: SensorCatalogo[] = [],
+): RepositorioCatalogoSensores & { sensores: Map<string, SensorCatalogo> } {
+  const sensores = new Map(sensoresIniciales.map((s) => [s.id, s]));
+  return {
+    sensores,
+    async listar() {
+      return [...sensores.values()];
+    },
+    async buscarPorId(id) {
+      return sensores.get(id) ?? null;
+    },
+    async listarPorMaquina(machineId) {
+      return [...sensores.values()].filter((s) => s.machineId === machineId);
+    },
+  };
+}
+
+const BUCKET_MS: Record<Bucket, number> = { "5m": 5 * 60 * 1000, "1h": 60 * 60 * 1000, "1d": 24 * 60 * 60 * 1000 };
+const ORDEN_BUCKETS: readonly Bucket[] = ["5m", "1h", "1d"];
+
+function agregarValores(valores: number[], agregacion: TipoAgregacion): number | null {
+  if (valores.length === 0) return agregacion === "count" ? 0 : null;
+  switch (agregacion) {
+    case "min":
+      return Math.min(...valores);
+    case "max":
+      return Math.max(...valores);
+    case "avg":
+      return valores.reduce((a, b) => a + b, 0) / valores.length;
+    case "count":
+      return valores.length;
+    case "last":
+      return valores[valores.length - 1]!;
+  }
+}
+
+function calcularPuntos(
+  lecturas: readonly LecturaIngerida[],
+  params: ParametrosConsultaAgregada,
+  bucket: Bucket,
+): PuntoSerieAgregada[] {
+  const ms = BUCKET_MS[bucket];
+  const grupos = new Map<number, number[]>();
+
+  for (const lectura of lecturas) {
+    if (lectura.sensorId !== params.sensorId) continue;
+    if (lectura.ts < params.desde || lectura.ts > params.hasta) continue;
+    const clave = Math.floor(lectura.ts.getTime() / ms) * ms;
+    const valores = grupos.get(clave) ?? [];
+    valores.push(lectura.value);
+    grupos.set(clave, valores);
+  }
+
+  return [...grupos.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([clave, valores]) => ({ bucket: new Date(clave), valor: agregarValores(valores, params.agregacion) }));
+}
+
+/** Replica en memoria el re-bucketing automático (≤ MAXIMO_PUNTOS_SERIE) que hace el repo real. */
+export function crearRepositorioAgregacionesSensoresFalso(
+  lecturasIniciales: LecturaIngerida[] = [],
+): RepositorioAgregacionesSensores & { lecturas: LecturaIngerida[] } {
+  const lecturas = [...lecturasIniciales];
+  return {
+    lecturas,
+    async consultar(params) {
+      let indice = ORDEN_BUCKETS.indexOf(params.bucket);
+      let bucketUsado = params.bucket;
+      let puntos = calcularPuntos(lecturas, params, bucketUsado);
+      let reBucketizado = false;
+
+      while (puntos.length > MAXIMO_PUNTOS_SERIE && indice < ORDEN_BUCKETS.length - 1) {
+        indice += 1;
+        bucketUsado = ORDEN_BUCKETS[indice]!;
+        puntos = calcularPuntos(lecturas, params, bucketUsado);
+        reBucketizado = true;
+      }
+
+      return { sensorId: params.sensorId, agregacion: params.agregacion, bucket: bucketUsado, puntos, reBucketizado };
+    },
+  };
+}
+
+export function crearRepositorioEstadoIngestaFalso(): RepositorioEstadoIngesta & { estado: EstadoIngesta | null } {
+  const estado = { valor: null as EstadoIngesta | null };
+  return {
+    get estado() {
+      return estado.valor;
+    },
+    async actualizar(nuevo) {
+      estado.valor = nuevo;
+    },
+    async obtener() {
+      return estado.valor;
     },
   };
 }
