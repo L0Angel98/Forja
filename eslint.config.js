@@ -1,6 +1,10 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import boundaries from "eslint-plugin-boundaries";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
+import jsxA11y from "eslint-plugin-jsx-a11y";
+import globals from "globals";
 
 const elementTypes = [
   "core",
@@ -12,6 +16,7 @@ const elementTypes = [
   "db",
   "connectors",
   "scheduler",
+  "ui",
   "app-server",
   "app-web",
   "app-ingest",
@@ -36,7 +41,7 @@ export default tseslint.config(
       "import/resolver": {
         node: { extensions: [".js", ".ts", ".tsx"], preserveSymlinks: false },
       },
-      "boundaries/include": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts"],
+      "boundaries/include": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "packages/**/*.tsx"],
       "boundaries/elements": [
         { type: "core", pattern: "packages/core/**" },
         { type: "shared", pattern: "packages/shared/**" },
@@ -47,6 +52,7 @@ export default tseslint.config(
         { type: "db", pattern: "packages/db/**" },
         { type: "connectors", pattern: "packages/connectors/**" },
         { type: "scheduler", pattern: "packages/scheduler/**" },
+        { type: "ui", pattern: "packages/ui/**" },
         { type: "app-server", pattern: "apps/server/**" },
         { type: "app-web", pattern: "apps/web/**" },
         { type: "app-ingest", pattern: "apps/ingest/**" },
@@ -67,11 +73,12 @@ export default tseslint.config(
             { from: "rag", allow: ["core", "shared", "llm", "db"] },
             { from: "runtime", allow: ["core", "shared", "tools"] },
             { from: "scheduler", allow: ["core", "shared", "runtime"] },
+            { from: "ui", allow: ["shared"] },
             {
               from: "app-server",
               allow: elementTypes.filter((t) => !t.startsWith("app-")),
             },
-            { from: "app-web", allow: ["shared"] },
+            { from: "app-web", allow: ["shared", "ui"] },
             { from: "app-ingest", allow: ["core", "shared", "db"] },
           ],
         },
@@ -79,9 +86,26 @@ export default tseslint.config(
     },
   },
   {
-    files: ["**/*.test.ts", "**/*.spec.ts", "**/*.config.ts", "**/vitest.setup.ts"],
+    files: ["**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx", "**/*.spec.tsx", "**/*.config.ts", "**/*.config.tsx", "**/vitest.setup.ts"],
     rules: {
       "boundaries/element-types": "off",
+    },
+  },
+  {
+    files: ["packages/ui/**/*.tsx", "apps/web/**/*.tsx"],
+    plugins: { react, "react-hooks": reactHooks, "jsx-a11y": jsxA11y },
+    languageOptions: {
+      globals: { ...globals.browser },
+    },
+    rules: {
+      ...react.configs.flat.recommended.rules,
+      ...reactHooks.configs["recommended-latest"].rules,
+      ...jsxA11y.flatConfigs.recommended.rules,
+      "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off",
+    },
+    settings: {
+      react: { version: "19" },
     },
   },
   {
