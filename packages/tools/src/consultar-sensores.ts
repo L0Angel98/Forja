@@ -41,6 +41,7 @@ export function crearHerramientaConsultarSensores(
       "Bucket: 5m|1h|1d. Si el bucket pedido produce más de 500 puntos, se re-bucketiza automáticamente a uno más " +
       "grueso (dilo si `reBucketizado` viene en true). No sirve para datos crudos ni para escribir nada.",
     rolesPermitidos: ["operador", "supervisor", "admin"],
+    soloLectura: true,
     schema,
     async execute(parametros, ctx) {
       const series = await consultarSensores(deps, {

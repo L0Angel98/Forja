@@ -32,6 +32,9 @@ export function crearHerramientaCrearReporteFalla(
       "Valida y arma un borrador de reporte de falla para una máquina a partir de una descripción conversacional. " +
       "No lo persiste: el usuario debe confirmarlo en el formulario antes de que se registre.",
     rolesPermitidos: ["operador", "supervisor", "admin"],
+    // Nunca persiste (ver comentario de la función): un borrador pendiente de confirmación humana
+    // no muta estado, así que spec 16 la trata como segura para rutinas automáticas.
+    soloLectura: true,
     schema,
     async execute(parametros, ctx) {
       return prepararBorradorReporteFalla(deps, {

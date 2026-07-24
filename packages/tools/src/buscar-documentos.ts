@@ -47,6 +47,7 @@ export function crearHerramientaBuscarDocumentos(
       "fuente (documento y página/sección). Si el resultado viene con encontrado=false, no hay información " +
       "relevante en la documentación: dilo explícitamente al usuario, nunca inventes una respuesta.",
     rolesPermitidos: ["operador", "supervisor", "admin"],
+    soloLectura: true,
     schema,
     async execute(parametros, ctx) {
       const areaIds = ctx.usuario.rol === "operador" ? await deps.areasUsuario.areasDe(ctx.usuario.id) : undefined;

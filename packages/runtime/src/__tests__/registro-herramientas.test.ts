@@ -6,6 +6,7 @@ import { RegistroHerramientas } from "../registro-herramientas";
 function herramientaDePrueba(datos: Partial<Herramienta> & Pick<Herramienta, "nombre" | "rolesPermitidos">): Herramienta {
   return {
     descripcion: "herramienta de prueba",
+    soloLectura: false,
     schema: z.object({}),
     async execute() {
       return null;

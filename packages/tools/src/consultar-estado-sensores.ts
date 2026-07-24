@@ -28,6 +28,7 @@ export function crearHerramientaConsultarEstadoSensores(
       "Lista los sensores 'mudos' (sin lecturas recientes) de una máquina, o de todas las máquinas visibles para " +
       "el usuario si se omite maquinaId. Útil para responder '¿algún sensor dejó de reportar?'.",
     rolesPermitidos: ["operador", "supervisor", "admin"],
+    soloLectura: true,
     schema,
     async execute(parametros, ctx) {
       const sensoresMudos = await listarSensoresMudos(deps, {

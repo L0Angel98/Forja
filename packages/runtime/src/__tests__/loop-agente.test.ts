@@ -37,6 +37,7 @@ const herramientaEco: Herramienta<{ texto: string }, string> = {
   nombre: "eco",
   descripcion: "Repite el texto recibido.",
   rolesPermitidos: ["operador", "supervisor", "admin"],
+  soloLectura: true,
   schema: z.object({ texto: z.string() }),
   async execute(parametros) {
     return `eco: ${parametros.texto}`;
@@ -47,6 +48,7 @@ const herramientaSoloSupervisor: Herramienta<Record<string, never>, string> = {
   nombre: "solo_supervisor",
   descripcion: "Acción restringida.",
   rolesPermitidos: ["supervisor", "admin"],
+  soloLectura: false,
   schema: z.object({}),
   async execute() {
     return "ok";

@@ -4,7 +4,8 @@ export interface HerramientaInvocadaTrace {
   readonly exitosa: boolean;
 }
 
-export type OrigenTurno = "chat" | "rutina";
+/** "rutina/{nombre}" identifica qué rutina disparó el turno (spec 16). */
+export type OrigenTurno = "chat" | `rutina/${string}`;
 
 export interface TurnoAgente {
   readonly plantId: string;

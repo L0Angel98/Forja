@@ -16,6 +16,9 @@ export function crearHerramientaProponerMemoria(
     descripcion:
       "Propone una entrada de memoria curada sobre la planta (patrones, contexto útil) para que un admin la apruebe o rechace.",
     rolesPermitidos: ["operador", "supervisor", "admin"],
+    // Persiste una sugerencia de inmediato (aunque quede pendiente de aprobación): no es segura
+    // para rutinas automáticas sin supervisión humana en el momento de la ejecución.
+    soloLectura: false,
     schema,
     async execute(parametros) {
       const sugerencia = await proponerSugerenciaMemoria(deps, {
