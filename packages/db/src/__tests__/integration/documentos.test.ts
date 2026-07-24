@@ -9,6 +9,7 @@ import { RepositorioChunksDrizzle } from "../../repositories/repositorio-chunks-
 import { RepositorioDocumentosDrizzle } from "../../repositories/repositorio-documentos-drizzle";
 import { RepositorioFeedbackDrizzle } from "../../repositories/repositorio-feedback-drizzle";
 import { agentTrace, appUser, area, machine, plant, role } from "../../schema/index";
+import { pruebasDeContratoFiltroAreaRepositorioChunks } from "../contracts/repositorio-chunks.contract";
 
 function vector(valorPrincipal: number): number[] {
   const v = new Array<number>(DIMENSION_EMBEDDING).fill(0);
@@ -16,11 +17,30 @@ function vector(valorPrincipal: number): number[] {
   return v;
 }
 
+function rellenar(v: readonly number[]): number[] {
+  const salida = new Array<number>(DIMENSION_EMBEDDING).fill(0);
+  for (let i = 0; i < v.length; i++) salida[i] = v[i]!;
+  return salida;
+}
+
+/** Rellena embeddings de baja dimensión (como los del contrato) a la dimensión real de la columna vector. */
+function repositorioChunksConRelleno(real: RepositorioChunksDrizzle) {
+  return {
+    crearMuchos: (chunks: Parameters<RepositorioChunksDrizzle["crearMuchos"]>[0]) =>
+      real.crearMuchos(chunks.map((c) => ({ ...c, embedding: rellenar(c.embedding) }))),
+    buscarPorDocumento: (id: string) => real.buscarPorDocumento(id),
+    marcarNoVigentesPorDocumento: (id: string) => real.marcarNoVigentesPorDocumento(id),
+    buscarSimilares: (embeddingConsulta: readonly number[], filtros: Parameters<RepositorioChunksDrizzle["buscarSimilares"]>[1]) =>
+      real.buscarSimilares(rellenar(embeddingConsulta), filtros),
+  };
+}
+
 describe("documentos y RAG (Postgres real)", () => {
   let contenedor: StartedPostgreSqlContainer | undefined;
   let db: ForjaDb;
   let cerrarConexion: (() => Promise<void>) | undefined;
 
+  let plantaId: string;
   let areaEnsambleId: string;
   let areaMaquinadoId: string;
   let maquinaPrensaId: string;
@@ -42,6 +62,7 @@ describe("documentos y RAG (Postgres real)", () => {
 
     await db.insert(role).values([{ id: "operador" }, { id: "supervisor" }, { id: "admin" }]);
     const [planta] = await db.insert(plant).values({ nombre: "Planta Documentos Test" }).returning();
+    plantaId = planta!.id;
 
     const [ensamble] = await db.insert(area).values({ plantId: planta!.id, nombre: "Ensamble" }).returning();
     const [maquinado] = await db.insert(area).values({ plantId: planta!.id, nombre: "Maquinado" }).returning();
@@ -178,5 +199,59 @@ describe("documentos y RAG (Postgres real)", () => {
 
     const feedback = new RepositorioFeedbackDrizzle(db);
     await feedback.crear({ id: randomUUID(), traceId: trace!.id, util: true, creadoEn: new Date() });
+  });
+
+  pruebasDeContratoFiltroAreaRepositorioChunks("drizzle", () => {
+    const documentos = new RepositorioDocumentosDrizzle(db);
+    const chunks = repositorioChunksConRelleno(new RepositorioChunksDrizzle(db));
+    const areasPorClave = new Map<string, string>();
+
+    async function resolverAreaId(clave: string): Promise<string> {
+      const existente = areasPorClave.get(clave);
+      if (existente) return existente;
+      const [fila] = await db
+        .insert(area)
+        .values({ plantId: plantaId, nombre: `área-contrato-${clave}-${randomUUID()}` })
+        .returning();
+      areasPorClave.set(clave, fila!.id);
+      return fila!.id;
+    }
+
+    return {
+      chunks,
+      async crearDocumento(clavesArea) {
+        const areaIds = await Promise.all(clavesArea.map(resolverAreaId));
+        const documento: Documento = {
+          id: randomUUID(),
+          nombre: "documento de contrato",
+          tipoArchivo: "md",
+          rutaAlmacenada: "local://contrato",
+          tamanoBytes: 0,
+          asociaciones: { maquinaIds: [], areaIds, familiaIds: [] },
+          version: 1,
+          documentoAnteriorId: null,
+          vigente: true,
+          estadoIndexacion: "indexado",
+          subidoPor: adminId,
+          creadoEn: new Date(),
+        };
+        await documentos.crear(documento);
+        return documento.id;
+      },
+      async crearChunk(documentoId, embedding) {
+        await chunks.crearMuchos([
+          {
+            id: randomUUID(),
+            documentoId,
+            indice: 0,
+            contenido: "contenido de contrato",
+            seccion: null,
+            pagina: null,
+            embedding,
+            vigente: true,
+          },
+        ]);
+      },
+    };
   });
 });
