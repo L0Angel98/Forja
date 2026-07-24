@@ -10,3 +10,6 @@ export * from "./componentes/Textarea";
 export * from "./componentes/EtiquetaSeveridad";
 export * from "./componentes/EtiquetaEstado";
 export * from "./componentes/TarjetaMaquina";
+export * from "./componentes/EstadoVacio";
+export * from "./componentes/EstadoError";
+export * from "./componentes/Skeleton";

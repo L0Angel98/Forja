@@ -1,0 +1,21 @@
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-16);
+  padding: var(--espacio-32) var(--espacio-16);
+  border-left: 4px solid var(--andon-rojo);
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--texto-lg);
+  font-weight: 600;
+  color: var(--acero-050);
+}
+
+.mensaje {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--acero-300);
+}
