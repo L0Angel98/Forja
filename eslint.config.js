@@ -1,0 +1,93 @@
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import boundaries from "eslint-plugin-boundaries";
+
+const elementTypes = [
+  "core",
+  "shared",
+  "runtime",
+  "tools",
+  "rag",
+  "llm",
+  "db",
+  "connectors",
+  "scheduler",
+  "app-server",
+  "app-web",
+  "app-ingest",
+];
+
+export default tseslint.config(
+  {
+    ignores: [
+      "**/dist/**",
+      "**/.next/**",
+      "**/.turbo/**",
+      "**/node_modules/**",
+      "**/coverage/**",
+      "**/next-env.d.ts",
+    ],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    plugins: { boundaries },
+    settings: {
+      "import/resolver": {
+        node: { extensions: [".js", ".ts", ".tsx"], preserveSymlinks: false },
+      },
+      "boundaries/include": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts"],
+      "boundaries/elements": [
+        { type: "core", pattern: "packages/core/**" },
+        { type: "shared", pattern: "packages/shared/**" },
+        { type: "runtime", pattern: "packages/runtime/**" },
+        { type: "tools", pattern: "packages/tools/**" },
+        { type: "rag", pattern: "packages/rag/**" },
+        { type: "llm", pattern: "packages/llm/**" },
+        { type: "db", pattern: "packages/db/**" },
+        { type: "connectors", pattern: "packages/connectors/**" },
+        { type: "scheduler", pattern: "packages/scheduler/**" },
+        { type: "app-server", pattern: "apps/server/**" },
+        { type: "app-web", pattern: "apps/web/**" },
+        { type: "app-ingest", pattern: "apps/ingest/**" },
+      ],
+    },
+    rules: {
+      "boundaries/element-types": [
+        "error",
+        {
+          default: "disallow",
+          rules: [
+            { from: "core", allow: ["shared"] },
+            { from: "shared", allow: [] },
+            { from: "db", allow: ["core", "shared"] },
+            { from: "llm", allow: ["core", "shared"] },
+            { from: "connectors", allow: ["core", "shared"] },
+            { from: "tools", allow: ["core", "shared"] },
+            { from: "rag", allow: ["core", "shared", "llm", "db"] },
+            { from: "runtime", allow: ["core", "shared", "tools"] },
+            { from: "scheduler", allow: ["core", "shared", "runtime"] },
+            {
+              from: "app-server",
+              allow: elementTypes.filter((t) => !t.startsWith("app-")),
+            },
+            { from: "app-web", allow: ["shared"] },
+            { from: "app-ingest", allow: ["core", "shared", "db"] },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.spec.ts", "**/*.config.ts", "**/vitest.setup.ts"],
+    rules: {
+      "boundaries/element-types": "off",
+    },
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    },
+  },
+);

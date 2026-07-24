@@ -1,0 +1,9 @@
+{$FORJA_DOMAIN:localhost} {
+	handle /api/* {
+		reverse_proxy server:3000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
