@@ -1,7 +1,11 @@
-export const ESTADOS_EJECUCION_RUTINA = ["exitosa", "fallida", "excedida", "omitida"] as const;
+export const ESTADOS_EJECUCION_RUTINA = ["exitosa", "fallida", "excedida", "omitida", "pausada"] as const;
 export type EstadoEjecucionRutina = (typeof ESTADOS_EJECUCION_RUTINA)[number];
 
-/** Historial de una corrida de rutina. "omitida" = no corrió porque la anterior seguía en curso. */
+/**
+ * Historial de una corrida de rutina.
+ * "omitida" = no corrió porque la anterior seguía en curso (no-overlap).
+ * "pausada" = no corrió porque el presupuesto mensual global de la planta ya se agotó.
+ */
 export interface EjecucionRutina {
   readonly id: string;
   readonly rutinaNombre: string;
