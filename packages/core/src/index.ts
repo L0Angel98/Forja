@@ -48,6 +48,7 @@ export * from "./use-cases/proponer-sugerencia-memoria";
 export * from "./use-cases/aprobar-sugerencia-memoria";
 export * from "./use-cases/rechazar-sugerencia-memoria";
 export * from "./use-cases/editar-archivo-workspace";
+export * from "./use-cases/preparar-borrador-reporte-falla";
 export * from "./use-cases/crear-reporte-falla";
 export * from "./use-cases/cambiar-estado-falla";
 export * from "./use-cases/materializar-snapshot-falla";
