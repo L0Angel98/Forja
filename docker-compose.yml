@@ -53,6 +53,10 @@ services:
         condition: service_completed_successfully
     environment:
       DATABASE_URL: ${DATABASE_URL:?Falta DATABASE_URL en .env}
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_DEVICE_CREDENTIALS: ${MQTT_DEVICE_CREDENTIALS:-}
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
 
   web:
     build:
