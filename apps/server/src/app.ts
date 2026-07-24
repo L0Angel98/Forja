@@ -8,6 +8,7 @@ import { registrarRutasDocumentos } from "./documentos/rutas";
 import type { ComposicionRuntime } from "./runtime/composicion";
 import { registrarRutasRuntime } from "./runtime/rutas";
 import { registrarRutasFallas } from "./fallas/rutas";
+import { registrarRutasSensores } from "./sensores/rutas";
 
 export interface DependenciasApp {
   auth: ComposicionAuth;
@@ -20,12 +21,16 @@ export function buildApp(deps: DependenciasApp): FastifyInstance {
   app.register(fastifyCookie);
   app.register(fastifyMultipart, { limits: { fileSize: MAXIMO_BYTES_DOCUMENTO } });
 
-  app.get("/api/salud", async () => ({ estado: "ok" }));
+  app.get("/api/salud", async () => {
+    const ingesta = await deps.runtime.estadoIngesta.obtener();
+    return { estado: "ok", ingesta };
+  });
 
   registrarRutasAuth(app, deps.auth);
   registrarRutasRuntime(app, deps.auth, deps.runtime);
   registrarRutasFallas(app, deps.auth, deps.runtime);
   registrarRutasDocumentos(app, deps.auth, deps.runtime);
+  registrarRutasSensores(app, deps.auth, deps.runtime);
 
   return app;
 }
