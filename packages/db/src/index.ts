@@ -26,3 +26,4 @@ export { RepositorioCuarentenaDrizzle } from "./repositories/repositorio-cuarent
 export { RepositorioCatalogoSensoresDrizzle } from "./repositories/repositorio-catalogo-sensores-drizzle";
 export { RepositorioAgregacionesSensoresDrizzle } from "./repositories/repositorio-agregaciones-sensores-drizzle";
 export { RepositorioEstadoIngestaDrizzle } from "./repositories/repositorio-estado-ingesta-drizzle";
+export { RepositorioEjecucionesRutinaDrizzle } from "./repositories/repositorio-ejecuciones-rutina-drizzle";

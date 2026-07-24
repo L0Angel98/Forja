@@ -71,6 +71,13 @@
       "when": 1784905545805,
       "tag": "0009_reading_continuous_aggregates",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784912089606,
+      "tag": "0010_serious_stark_industries",
+      "breakpoints": true
     }
   ]
 }
