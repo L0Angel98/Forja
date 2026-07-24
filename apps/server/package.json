@@ -8,12 +8,14 @@
     "start": "tsx src/main.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval:fallas": "tsx scripts/eval-crear-reporte-falla.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
     "@forja/core": "workspace:*",
     "@forja/db": "workspace:*",
+    "@forja/llm": "workspace:*",
     "@forja/runtime": "workspace:*",
     "@forja/shared": "workspace:*",
     "@forja/tools": "workspace:*",
@@ -22,6 +24,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@ai-sdk/anthropic": "^1.2.12",
     "@types/node": "^22.10.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
