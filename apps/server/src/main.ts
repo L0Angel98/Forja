@@ -3,6 +3,7 @@ import { buildApp } from "./app";
 import { construirComposicionAuth } from "./auth/composicion";
 import { iniciarPgBoss } from "./pgboss";
 import { construirComposicionRuntime } from "./runtime/composicion";
+import { registrarWorkerSnapshotFalla } from "./runtime/worker-snapshot-falla";
 
 const PUERTO = Number(process.env["PORT"] ?? 3000);
 const WORKSPACE_DIR = process.env["WORKSPACE_DIR"] ?? "./workspace";
@@ -12,7 +13,14 @@ async function main(): Promise<void> {
   const boss = await iniciarPgBoss(url);
   const { db, cerrar: cerrarDb } = crearCliente(url);
   const auth = construirComposicionAuth(db);
-  const runtime = await construirComposicionRuntime(db, WORKSPACE_DIR);
+  const runtime = await construirComposicionRuntime(db, WORKSPACE_DIR, boss);
+  await registrarWorkerSnapshotFalla(boss, {
+    sensores: runtime.sensoresPorMaquina,
+    lecturas: runtime.lecturasVentana,
+    snapshots: runtime.snapshotsFalla,
+    generarId: runtime.generarId,
+    horasVentana: runtime.horasVentanaSnapshot,
+  });
   const app = buildApp({ auth, runtime });
 
   const cerrar = async () => {

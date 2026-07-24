@@ -6,15 +6,26 @@ import {
   SugerenciaMemoriaNoEncontrada,
   SugerenciaMemoriaYaResuelta,
 } from "@forja/core";
+import { ejecutarTurno } from "@forja/runtime";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { ComposicionAuth } from "../auth/composicion";
-import { requiereRol } from "../auth/middleware";
+import { requiereRol, requiereSesion } from "../auth/middleware";
 import type { ComposicionRuntime } from "./composicion";
 
 const cuerpoEditarArchivo = z.object({ contenido: z.string() });
 const paramsArchivo = z.object({ archivo: z.enum(["soul", "planta"]) });
 const paramsSugerencia = z.object({ id: z.string().uuid() });
+
+const mensajeConversacionSchema = z.object({
+  rol: z.enum(["usuario", "agente", "herramienta"]),
+  contenido: z.string(),
+  nombreHerramienta: z.string().optional(),
+});
+const cuerpoChat = z.object({
+  mensaje: z.string().min(1),
+  historial: z.array(mensajeConversacionSchema).optional().default([]),
+});
 
 export function registrarRutasRuntime(
   app: FastifyInstance,
@@ -22,6 +33,33 @@ export function registrarRutasRuntime(
   runtime: ComposicionRuntime,
 ): void {
   const soloAdmin = requiereRol(auth, "admin");
+
+  app.post("/api/chat", { preHandler: requiereSesion(auth) }, async (request, reply) => {
+    const cuerpo = cuerpoChat.safeParse(request.body);
+    if (!cuerpo.success) return reply.status(400).send({ error: "solicitud_invalida" });
+
+    const config = runtime.workspaceLoader.obtenerConfiguracion();
+    const systemPrompt = [config.soul, config.planta, config.memoria].filter((s) => s.trim().length > 0).join("\n\n");
+    const historial = cuerpo.data.historial.map((m) =>
+      m.nombreHerramienta !== undefined
+        ? { rol: m.rol, contenido: m.contenido, nombreHerramienta: m.nombreHerramienta }
+        : { rol: m.rol, contenido: m.contenido },
+    );
+
+    const resultado = await ejecutarTurno(
+      { registro: runtime.registroHerramientas, llm: runtime.llm, trace: runtime.trace },
+      {
+        usuario: request.usuarioActual!,
+        plantId: runtime.plantId,
+        mensaje: cuerpo.data.mensaje,
+        historial,
+        systemPrompt,
+        traceId: runtime.generarId(),
+      },
+    );
+
+    return reply.status(200).send(resultado);
+  });
 
   app.get("/api/admin/workspace", { preHandler: soloAdmin }, async (_request, reply) => {
     const config = runtime.workspaceLoader.obtenerConfiguracion();

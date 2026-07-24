@@ -210,7 +210,14 @@ export function crearRepositorioAreasUsuarioFalso(
   };
 }
 
-export function crearRepositorioFallasFalso(): RepositorioFallas & { fallas: Map<string, ReporteFalla> } {
+/**
+ * `maquinas` es opcional y solo se usa para resolver `filtros.areaIds` (el
+ * repo real hace un join con `machine`; el falso necesita el mismo mapa
+ * machineId → areaId que ya expone `crearRepositorioMaquinasFalso`).
+ */
+export function crearRepositorioFallasFalso(
+  maquinas?: Map<string, Maquina>,
+): RepositorioFallas & { fallas: Map<string, ReporteFalla> } {
   const fallas = new Map<string, ReporteFalla>();
   return {
     fallas,
@@ -229,6 +236,10 @@ export function crearRepositorioFallasFalso(): RepositorioFallas & { fallas: Map
         if (filtros.machineId && f.machineId !== filtros.machineId) return false;
         if (filtros.estado && f.estado !== filtros.estado) return false;
         if (filtros.severidad && f.severidad !== filtros.severidad) return false;
+        if (filtros.areaIds) {
+          const areaId = maquinas?.get(f.machineId)?.areaId;
+          if (!areaId || !filtros.areaIds.includes(areaId)) return false;
+        }
         return true;
       });
     },

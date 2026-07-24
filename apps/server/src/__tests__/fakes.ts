@@ -1,17 +1,29 @@
+import { randomUUID } from "node:crypto";
 import {
+  BusEventos,
   crearEscritorArchivosWorkspaceFalso,
   crearEscritorMemoriaFalso,
   crearHasherContrasenasFalso,
+  crearColaTrabajosFalso,
+  crearProveedorLLMFalso,
   crearRegistradorAuditoriaMemoria,
   crearRegistradorTraceFalso,
+  crearRepositorioAreasUsuarioFalso,
+  crearRepositorioFallasFalso,
   crearRepositorioIntentosLoginMemoria,
+  crearRepositorioLecturasVentanaFalso,
+  crearRepositorioMaquinasFalso,
+  crearRepositorioNotificacionesFalso,
   crearRepositorioSesionesMemoria,
+  crearRepositorioSnapshotsFallaFalso,
+  crearRepositorioSensoresPorMaquinaFalso,
   crearRepositorioSugerenciasMemoriaFalso,
   crearRepositorioUsuariosMemoria,
   type ConfiguracionWorkspace,
   type Usuario,
 } from "@forja/core";
 import { RegistroHerramientas, type IWorkspaceLoader } from "@forja/runtime";
+import { crearHerramientaCrearReporteFalla, crearHerramientaProponerMemoria } from "@forja/tools";
 import type { ComposicionAuth } from "../auth/composicion";
 import type { ComposicionRuntime } from "../runtime/composicion";
 
@@ -61,12 +73,35 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
   sugerenciasMemoriaRepo: ReturnType<typeof crearRepositorioSugerenciasMemoriaFalso>;
   escritorMemoriaFalso: ReturnType<typeof crearEscritorMemoriaFalso>;
   escritorWorkspaceFalso: ReturnType<typeof crearEscritorArchivosWorkspaceFalso>;
+  maquinasRepo: ReturnType<typeof crearRepositorioMaquinasFalso>;
+  areasUsuarioRepo: ReturnType<typeof crearRepositorioAreasUsuarioFalso>;
+  fallasRepo: ReturnType<typeof crearRepositorioFallasFalso>;
+  colaFalsa: ReturnType<typeof crearColaTrabajosFalso>;
+  notificacionesRepo: ReturnType<typeof crearRepositorioNotificacionesFalso>;
 } {
   const sugerenciasMemoriaRepo = crearRepositorioSugerenciasMemoriaFalso();
   const escritorMemoriaFalso = crearEscritorMemoriaFalso();
   const escritorWorkspaceFalso = crearEscritorArchivosWorkspaceFalso();
+  const maquinasRepo = crearRepositorioMaquinasFalso();
+  const areasUsuarioRepo = crearRepositorioAreasUsuarioFalso();
+  const fallasRepo = crearRepositorioFallasFalso(maquinasRepo.maquinas);
+  const sensoresPorMaquina = crearRepositorioSensoresPorMaquinaFalso();
+  const lecturasVentana = crearRepositorioLecturasVentanaFalso();
+  const snapshotsFalla = crearRepositorioSnapshotsFallaFalso();
+  const notificacionesRepo = crearRepositorioNotificacionesFalso();
+  const colaFalsa = crearColaTrabajosFalso();
+  const bus = new BusEventos();
+
+  const registroHerramientas = new RegistroHerramientas();
+  registroHerramientas.registrar(
+    crearHerramientaProponerMemoria({ sugerencias: sugerenciasMemoriaRepo, generarId: () => "id-falso" }),
+  );
+  registroHerramientas.registrar(
+    crearHerramientaCrearReporteFalla({ maquinas: maquinasRepo, areasUsuario: areasUsuarioRepo }),
+  );
 
   return {
+    plantId: "planta-falsa",
     workspaceLoader: crearWorkspaceLoaderFalso({
       soul: "Eres Forja.",
       planta: "Planta de prueba.",
@@ -74,14 +109,30 @@ export function crearComposicionRuntimeFalsa(): ComposicionRuntime & {
       advertencias: [],
       archivosInvalidos: [],
     }),
-    registroHerramientas: new RegistroHerramientas(),
+    registroHerramientas,
     trace: crearRegistradorTraceFalso(),
     sugerenciasMemoria: sugerenciasMemoriaRepo,
     escritorMemoria: escritorMemoriaFalso,
     escritorWorkspace: escritorWorkspaceFalso,
-    generarId: () => `id-falso-${(contadorSesiones += 1)}`,
+    llm: crearProveedorLLMFalso([]),
+    maquinas: maquinasRepo,
+    areasUsuario: areasUsuarioRepo,
+    fallas: fallasRepo,
+    sensoresPorMaquina,
+    lecturasVentana,
+    snapshotsFalla,
+    notificaciones: notificacionesRepo,
+    cola: colaFalsa,
+    bus,
+    horasVentanaSnapshot: 4,
+    generarId: randomUUID,
     sugerenciasMemoriaRepo,
     escritorMemoriaFalso,
     escritorWorkspaceFalso,
+    maquinasRepo,
+    areasUsuarioRepo,
+    fallasRepo,
+    colaFalsa,
+    notificacionesRepo,
   };
 }

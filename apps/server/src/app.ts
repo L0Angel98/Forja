@@ -4,6 +4,7 @@ import type { ComposicionAuth } from "./auth/composicion";
 import { registrarRutasAuth } from "./auth/rutas";
 import type { ComposicionRuntime } from "./runtime/composicion";
 import { registrarRutasRuntime } from "./runtime/rutas";
+import { registrarRutasFallas } from "./fallas/rutas";
 
 export interface DependenciasApp {
   auth: ComposicionAuth;
@@ -19,6 +20,7 @@ export function buildApp(deps: DependenciasApp): FastifyInstance {
 
   registrarRutasAuth(app, deps.auth);
   registrarRutasRuntime(app, deps.auth, deps.runtime);
+  registrarRutasFallas(app, deps.auth, deps.runtime);
 
   return app;
 }
