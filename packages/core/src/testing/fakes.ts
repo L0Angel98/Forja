@@ -26,6 +26,15 @@ import type { RepositorioSnapshotsFalla } from "../ports/repositorio-snapshots-f
 import type { Notificacion } from "../entities/notificacion";
 import type { RepositorioNotificaciones } from "../ports/repositorio-notificaciones";
 import type { ColaTrabajos } from "../ports/cola-trabajos";
+import type { Documento } from "../entities/documento";
+import type { FiltrosListarDocumentos, RepositorioDocumentos } from "../ports/repositorio-documentos";
+import type { ChunkDocumento, CitaDocumento } from "../entities/chunk-documento";
+import type { FiltrosBuscarSimilares, RepositorioChunks } from "../ports/repositorio-chunks";
+import type { AlmacenArchivos } from "../ports/almacen-archivos";
+import type { ExtractorTexto, TextoExtraido } from "../ports/extractor-texto";
+import type { GeneradorEmbeddings } from "../ports/generador-embeddings";
+import type { FeedbackRespuesta } from "../entities/feedback-respuesta";
+import type { RepositorioFeedback } from "../ports/repositorio-feedback";
 
 export function crearRepositorioUsuariosMemoria(usuariosIniciales: Usuario[] = []): RepositorioUsuarios & {
   usuarios: Map<string, Usuario>;
@@ -305,6 +314,166 @@ export function crearColaTrabajosFalso(): ColaTrabajos & {
     encolados,
     async encolar(tipo, payload) {
       encolados.push({ tipo, payload });
+    },
+  };
+}
+
+export function crearRepositorioDocumentosFalso(
+  documentosIniciales: Documento[] = [],
+): RepositorioDocumentos & { documentos: Map<string, Documento> } {
+  const documentos = new Map(documentosIniciales.map((d) => [d.id, d]));
+  return {
+    documentos,
+    async crear(documento) {
+      documentos.set(documento.id, documento);
+    },
+    async buscarPorId(id) {
+      return documentos.get(id) ?? null;
+    },
+    async listar(filtros: FiltrosListarDocumentos) {
+      return [...documentos.values()].filter((d) => {
+        if (filtros.soloVigentes && !d.vigente) return false;
+        if (filtros.maquinaId && !d.asociaciones.maquinaIds.includes(filtros.maquinaId)) return false;
+        if (filtros.areaId && !d.asociaciones.areaIds.includes(filtros.areaId)) return false;
+        return true;
+      });
+    },
+    async actualizarVigencia(id, vigente) {
+      const documento = documentos.get(id);
+      if (documento) documentos.set(id, { ...documento, vigente });
+    },
+    async actualizarEstadoIndexacion(id, estadoIndexacion) {
+      const documento = documentos.get(id);
+      if (documento) documentos.set(id, { ...documento, estadoIndexacion });
+    },
+  };
+}
+
+function similitudCoseno(a: readonly number[], b: readonly number[]): number {
+  let producto = 0;
+  let normaA = 0;
+  let normaB = 0;
+  for (let i = 0; i < a.length; i++) {
+    producto += a[i]! * b[i]!;
+    normaA += a[i]! * a[i]!;
+    normaB += b[i]! * b[i]!;
+  }
+  if (normaA === 0 || normaB === 0) return 0;
+  return producto / (Math.sqrt(normaA) * Math.sqrt(normaB));
+}
+
+/**
+ * `documentos` es opcional y solo se usa para resolver el nombre del
+ * documento y para aplicar `filtros.areaIds`/`filtros.maquinaId` (el repo
+ * real hace un join con `document`/`document_area`/`document_machine`).
+ */
+export function crearRepositorioChunksFalso(
+  documentos?: Map<string, Documento>,
+): RepositorioChunks & { chunks: ChunkDocumento[] } {
+  const chunks: ChunkDocumento[] = [];
+  return {
+    chunks,
+    async crearMuchos(nuevos) {
+      chunks.push(...nuevos);
+    },
+    async buscarPorDocumento(documentoId) {
+      return chunks.filter((c) => c.documentoId === documentoId);
+    },
+    async marcarNoVigentesPorDocumento(documentoId) {
+      for (let i = 0; i < chunks.length; i++) {
+        if (chunks[i]!.documentoId === documentoId) {
+          chunks[i] = { ...chunks[i]!, vigente: false };
+        }
+      }
+    },
+    async buscarSimilares(embeddingConsulta, filtros: FiltrosBuscarSimilares) {
+      const resultados: CitaDocumento[] = [];
+
+      for (const chunk of chunks) {
+        if (!chunk.vigente) continue;
+        const documento = documentos?.get(chunk.documentoId);
+        if (documentos && (!documento || !documento.vigente)) continue;
+        if (filtros.areaIds && documento && !filtros.areaIds.some((a) => documento.asociaciones.areaIds.includes(a))) {
+          continue;
+        }
+        if (
+          filtros.maquinaId &&
+          documento &&
+          documento.asociaciones.maquinaIds.length > 0 &&
+          !documento.asociaciones.maquinaIds.includes(filtros.maquinaId)
+        ) {
+          continue;
+        }
+
+        const similitud = similitudCoseno(embeddingConsulta, chunk.embedding);
+        if (similitud < filtros.umbralSimilitud) continue;
+
+        resultados.push({
+          documentoId: chunk.documentoId,
+          documentoNombre: documento?.nombre ?? "documento",
+          contenido: chunk.contenido,
+          seccion: chunk.seccion,
+          pagina: chunk.pagina,
+          similitud,
+        });
+      }
+
+      resultados.sort((a, b) => b.similitud - a.similitud);
+      return resultados.slice(0, filtros.topK);
+    },
+  };
+}
+
+export function crearAlmacenArchivosFalso(): AlmacenArchivos & { archivos: Map<string, Buffer> } {
+  const archivos = new Map<string, Buffer>();
+  let contador = 0;
+  return {
+    archivos,
+    async guardar(nombreSugerido, contenido) {
+      contador += 1;
+      const ruta = `falso://${contador}-${nombreSugerido}`;
+      archivos.set(ruta, contenido);
+      return ruta;
+    },
+    async leer(ruta) {
+      const contenido = archivos.get(ruta);
+      if (!contenido) throw new Error(`No existe el archivo falso en "${ruta}".`);
+      return contenido;
+    },
+  };
+}
+
+export function crearExtractorTextoFalso(
+  respuesta: TextoExtraido = { texto: "texto de prueba", totalPaginas: null },
+): ExtractorTexto {
+  return {
+    async extraer() {
+      return respuesta;
+    },
+  };
+}
+
+/** Genera embeddings deterministas a partir del texto, sin costo ni red. */
+export function crearGeneradorEmbeddingsFalso(
+  generar: (texto: string) => number[] = (texto) => [texto.length, [...texto].filter((c) => c === "a").length, 1],
+): GeneradorEmbeddings & { llamadas: string[][] } {
+  const llamadas: string[][] = [];
+  return {
+    dimensiones: 3,
+    llamadas,
+    async generar(textos) {
+      llamadas.push([...textos]);
+      return textos.map(generar);
+    },
+  };
+}
+
+export function crearRepositorioFeedbackFalso(): RepositorioFeedback & { feedbacks: FeedbackRespuesta[] } {
+  const feedbacks: FeedbackRespuesta[] = [];
+  return {
+    feedbacks,
+    async crear(feedback) {
+      feedbacks.push(feedback);
     },
   };
 }

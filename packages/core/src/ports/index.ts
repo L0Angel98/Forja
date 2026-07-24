@@ -21,3 +21,11 @@ export type { RepositorioLecturasVentana } from "./repositorio-lecturas-ventana"
 export type { RepositorioSnapshotsFalla } from "./repositorio-snapshots-falla";
 export type { RepositorioNotificaciones } from "./repositorio-notificaciones";
 export type { ColaTrabajos } from "./cola-trabajos";
+export type { EstrategiaChunking } from "./estrategia-chunking";
+export type { SelectorEstrategiaChunking } from "./selector-estrategia-chunking";
+export type { ExtractorTexto, TextoExtraido } from "./extractor-texto";
+export type { AlmacenArchivos } from "./almacen-archivos";
+export type { GeneradorEmbeddings } from "./generador-embeddings";
+export type { FiltrosListarDocumentos, RepositorioDocumentos } from "./repositorio-documentos";
+export type { FiltrosBuscarSimilares, RepositorioChunks } from "./repositorio-chunks";
+export type { RepositorioFeedback } from "./repositorio-feedback";

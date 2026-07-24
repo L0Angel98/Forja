@@ -13,6 +13,9 @@ export * from "./entities/maquina";
 export * from "./entities/sensor";
 export * from "./entities/snapshot-sensor";
 export * from "./entities/notificacion";
+export * from "./entities/documento";
+export * from "./entities/chunk-documento";
+export * from "./entities/feedback-respuesta";
 export * from "./permisos";
 export * from "./politica-bloqueo-login";
 export * from "./diff-lineas";
@@ -34,6 +37,10 @@ export * from "./errors/sintoma-requerido";
 export * from "./errors/demasiadas-fotos";
 export * from "./errors/reporte-falla-no-encontrado";
 export * from "./errors/transicion-estado-invalida";
+export * from "./errors/formato-documento-no-soportado";
+export * from "./errors/documento-demasiado-grande";
+export * from "./errors/documento-sin-asociacion";
+export * from "./errors/documento-no-encontrado";
 
 export * from "./events/bus-eventos";
 export * from "./events/falla-reportada";
@@ -53,6 +60,12 @@ export * from "./use-cases/crear-reporte-falla";
 export * from "./use-cases/cambiar-estado-falla";
 export * from "./use-cases/materializar-snapshot-falla";
 export * from "./use-cases/notificar-supervisores-falla";
+export * from "./use-cases/cargar-documento";
+export * from "./use-cases/reemplazar-version-documento";
+export * from "./use-cases/eliminar-documento";
+export * from "./use-cases/indexar-documento";
+export * from "./use-cases/buscar-documentos";
+export * from "./use-cases/registrar-feedback-respuesta";
 
 /**
  * Dobles de prueba en memoria para los puertos de auth. Solo para tests
