@@ -38,6 +38,13 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm test:integration
 
+  storybook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @forja/ui run build-storybook
+
   e2e:
     runs-on: ubuntu-latest
     services:
@@ -107,7 +114,7 @@ jobs:
         run: pnpm exec lhci autorun --config=./lighthouserc.cjs
 
   build-images:
-    needs: [lint, typecheck, test, test-integration, e2e, lighthouse]
+    needs: [lint, typecheck, test, test-integration, storybook, e2e, lighthouse]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     strategy:

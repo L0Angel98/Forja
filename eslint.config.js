@@ -139,6 +139,7 @@ export default tseslint.config(
       "**/*.config.tsx",
       "**/*.stories.tsx",
       "**/vitest.setup.ts",
+      "apps/web/e2e/**",
     ],
     rules: {
       "boundaries/element-types": "off",
