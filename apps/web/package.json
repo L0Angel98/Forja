@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "next dev -p 3100",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3100",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . && stylelint '{app,components}/**/*.css' --config ../../stylelint.config.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@forja/shared": "workspace:*",
@@ -22,6 +23,8 @@
     "serwist": "^9.5.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.0",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

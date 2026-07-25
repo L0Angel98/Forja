@@ -28,6 +28,7 @@ export function ChatOperador() {
   const { t } = useI18n();
   const enLinea = usarEnLinea();
   const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
+  const [degradado, setDegradado] = useState(false);
   const contadorRef = useRef(0);
 
   const mutacion = useMutation({
@@ -55,6 +56,11 @@ export function ChatOperador() {
           contadorRef.current += 1;
           const idAgente = `agente-${contadorRef.current}`;
           setMensajes((previos) => [...previos, { id: idAgente, rol: "agente", texto: respuesta.respuesta }]);
+          // exitoso: false = el LLM no respondió (no configurado, caído, error del
+          // proveedor) — el turno igual devuelve 200 con un mensaje de fallback
+          // (packages/runtime/src/loop-agente.ts), así que el chat se ve
+          // "normal"; el banner discreto es lo que deja claro que está degradado.
+          if (!respuesta.exitoso) setDegradado(true);
         },
       },
     );
@@ -63,7 +69,8 @@ export function ChatOperador() {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {!enLinea ? <EstadoError mensaje={t("chat.sinConexion")} /> : null}
-      {enLinea && mutacion.isError ? (
+      {enLinea && degradado ? <EstadoError mensaje={t("chat.degradado")} /> : null}
+      {enLinea && !degradado && mutacion.isError ? (
         <EstadoError mensaje={t("chat.errorEnvio")} onReintentar={() => mutacion.reset()} />
       ) : null}
       <Chat mensajes={mensajes} onEnviar={alEnviar} deshabilitado={!enLinea || mutacion.isPending} />

@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
+    "@lhci/cli": "^0.15.1",
     "@types/node": "^22.10.5",
     "eslint": "^9.18.0",
     "eslint-plugin-boundaries": "^5.0.1",
@@ -26,6 +27,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.7.0",
+    "puppeteer": "^25.3.0",
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-declaration-strict-value": "^1.11.1",

@@ -6,5 +6,6 @@ allowBuilds:
   cpu-features: true
   esbuild: true
   protobufjs: true
+  puppeteer: true
   sharp: true
   ssh2: true

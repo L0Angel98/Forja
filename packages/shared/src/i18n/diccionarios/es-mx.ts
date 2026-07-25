@@ -47,6 +47,7 @@ export const esMX = {
     remitenteAgente: "Agente",
     errorEnvio: "No se pudo obtener respuesta del agente. Tu mensaje se guardó — usa Reportar si es urgente.",
     sinConexion: "El chat no funciona sin conexión. Usa Reportar si es urgente.",
+    degradado: "El asistente de IA no está disponible. Usa Reportar si es urgente — tus mensajes siguen guardándose aquí.",
   },
   graficaSensor: {
     rango: "Rango",

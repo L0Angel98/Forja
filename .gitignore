@@ -6,6 +6,10 @@ coverage/
 storybook-static/
 apps/web/public/sw.js
 apps/web/public/sw.js.map
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
+apps/web/.lighthouseci/
 *.tsbuildinfo
 *.log
 .env

@@ -38,8 +38,76 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm test:integration
 
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: timescale/timescaledb-ha:pg16
+        env:
+          POSTGRES_USER: forja
+          POSTGRES_PASSWORD: forja
+          POSTGRES_DB: forja
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U forja -d forja"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://forja:forja@localhost:5432/forja
+      WORKSPACE_DIR: ${{ github.workspace }}/workspace.example
+      PORT: 3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @forja/db run db:migrate
+      - run: pnpm --filter @forja/db run seed
+      - run: pnpm --filter @forja/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @forja/web run build
+      - run: pnpm --filter @forja/web run e2e
+        env:
+          CI: "true"
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: timescale/timescaledb-ha:pg16
+        env:
+          POSTGRES_USER: forja
+          POSTGRES_PASSWORD: forja
+          POSTGRES_DB: forja
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U forja -d forja"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://forja:forja@localhost:5432/forja
+      WORKSPACE_DIR: ${{ github.workspace }}/workspace.example
+      PORT: 3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @forja/db run db:migrate
+      - run: pnpm --filter @forja/db run seed
+      - run: pnpm --filter @forja/web run build
+      - name: Levantar server y web
+        run: |
+          pnpm --filter @forja/server run start &
+          pnpm --filter @forja/web run start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/api/salud > /dev/null && curl -sf http://localhost:3100/iniciar-sesion > /dev/null && break
+            sleep 2
+          done
+      - working-directory: apps/web
+        run: pnpm exec lhci autorun --config=./lighthouserc.cjs
+
   build-images:
-    needs: [lint, typecheck, test, test-integration]
+    needs: [lint, typecheck, test, test-integration, e2e, lighthouse]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     strategy:
