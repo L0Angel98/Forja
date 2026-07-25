@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint .",
+    "lint": "eslint . && stylelint '{app,components}/**/*.css' --config ../../stylelint.config.mjs",
     "test": "vitest run"
   },
   "dependencies": {

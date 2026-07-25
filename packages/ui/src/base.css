@@ -1,6 +1,6 @@
 /* Reset y fundaciones globales (spec 02-interfaz). Importa tokens.css y fuentes.css. */
-@import "./tokens.css";
-@import "./fuentes.css";
+@import url("./tokens.css");
+@import url("./fuentes.css");
 
 *,
 *::before,

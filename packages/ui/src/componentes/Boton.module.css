@@ -37,7 +37,7 @@
 }
 
 .primario:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--senal-azul) 85%, black);
+  background: color-mix(in srgb, var(--senal-azul) 85%, var(--acero-900));
 }
 
 .secundario {
@@ -56,14 +56,14 @@
 }
 
 .peligro:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--andon-rojo) 85%, black);
+  background: color-mix(in srgb, var(--andon-rojo) 85%, var(--acero-900));
 }
 
 .spinner {
   width: 1em;
   height: 1em;
   border-radius: 50%;
-  border: 2px solid currentColor;
+  border: 2px solid currentcolor;
   border-top-color: transparent;
   animation: girar 0.6s linear infinite;
 }

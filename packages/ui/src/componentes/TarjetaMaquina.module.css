@@ -17,7 +17,7 @@
 }
 
 .clicable:hover {
-  background: color-mix(in srgb, var(--acero-700) 85%, white);
+  background: color-mix(in srgb, var(--acero-700) 85%, var(--acero-050));
 }
 
 .franja {

@@ -4,10 +4,10 @@
  * empaqueta los .woff2 dentro del paquete npm — nada se descarga en
  * tiempo de ejecución.
  */
-@import "@fontsource/inter-tight/400.css";
-@import "@fontsource/inter-tight/500.css";
-@import "@fontsource/inter-tight/600.css";
-@import "@fontsource/inter-tight/700.css";
-@import "@fontsource/jetbrains-mono/400.css";
-@import "@fontsource/jetbrains-mono/500.css";
-@import "@fontsource/jetbrains-mono/700.css";
+@import url("@fontsource/inter-tight/400.css");
+@import url("@fontsource/inter-tight/500.css");
+@import url("@fontsource/inter-tight/600.css");
+@import url("@fontsource/inter-tight/700.css");
+@import url("@fontsource/jetbrains-mono/400.css");
+@import url("@fontsource/jetbrains-mono/500.css");
+@import url("@fontsource/jetbrains-mono/700.css");

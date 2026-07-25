@@ -66,6 +66,7 @@ export const esMX = {
     fallo: "No se pudo subir. Tus datos siguen aquí",
   },
   auth: {
+    nombreProducto: "Forja",
     emailEtiqueta: "Correo",
     contrasenaEtiqueta: "Contraseña",
     entrar: "Entrar",

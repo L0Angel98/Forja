@@ -4,6 +4,7 @@ import boundaries from "eslint-plugin-boundaries";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+import i18next from "eslint-plugin-i18next";
 import globals from "globals";
 
 const elementTypes = [
@@ -87,12 +88,6 @@ export default tseslint.config(
     },
   },
   {
-    files: ["**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx", "**/*.spec.tsx", "**/*.config.ts", "**/*.config.tsx", "**/vitest.setup.ts"],
-    rules: {
-      "boundaries/element-types": "off",
-    },
-  },
-  {
     files: ["**/*.mjs", "**/*.cjs"],
     languageOptions: {
       globals: { ...globals.node },
@@ -100,7 +95,7 @@ export default tseslint.config(
   },
   {
     files: ["packages/ui/**/*.tsx", "apps/web/**/*.tsx"],
-    plugins: { react, "react-hooks": reactHooks, "jsx-a11y": jsxA11y },
+    plugins: { react, "react-hooks": reactHooks, "jsx-a11y": jsxA11y, i18next },
     languageOptions: {
       globals: { ...globals.browser },
     },
@@ -110,6 +105,15 @@ export default tseslint.config(
       ...jsxA11y.flatConfigs.recommended.rules,
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
+      // "Cero cadenas de texto visibles fuera de i18n" (spec 02-interfaz).
+      // mode: jsx-text-only (default de la librería) revisa el texto que
+      // cae directo como hijo de un elemento JSX (<p>Texto</p>) — el caso
+      // más común y de mayor impacto — sin tocar valores de props de
+      // componentes propios (Boton variante="secundario", etc.), que la
+      // librería no puede distinguir de forma confiable de texto real y
+      // produciría falsos positivos en casi cada prop de tipo enum del
+      // design system.
+      "i18next/no-literal-string": ["error", { mode: "jsx-text-only" }],
     },
     settings: {
       react: { version: "19" },
@@ -119,6 +123,26 @@ export default tseslint.config(
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    },
+  },
+  {
+    // Va al final a propósito: en flat config, la última entrada que
+    // coincide con un archivo gana. Tests, historias de Storybook y
+    // archivos de config son código de desarrollo, no UI que un operador
+    // vea — no les aplica ni boundaries ni "cero cadenas fuera de i18n".
+    files: [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      "**/*.test.tsx",
+      "**/*.spec.tsx",
+      "**/*.config.ts",
+      "**/*.config.tsx",
+      "**/*.stories.tsx",
+      "**/vitest.setup.ts",
+    ],
+    rules: {
+      "boundaries/element-types": "off",
+      "i18next/no-literal-string": "off",
     },
   },
 );
