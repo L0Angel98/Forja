@@ -31,6 +31,7 @@ export default tseslint.config(
       "**/node_modules/**",
       "**/coverage/**",
       "**/next-env.d.ts",
+      "**/storybook-static/**",
     ],
   },
   js.configs.recommended,

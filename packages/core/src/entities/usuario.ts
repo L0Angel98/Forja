@@ -1,5 +1,6 @@
-export const ROLES = ["operador", "supervisor", "admin"] as const;
-export type Rol = (typeof ROLES)[number];
+import type { Rol } from "@forja/shared";
+
+export { ROLES, type Rol } from "@forja/shared";
 
 export interface Usuario {
   readonly id: string;
