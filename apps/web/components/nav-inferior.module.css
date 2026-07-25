@@ -1,0 +1,22 @@
+.nav {
+  display: flex;
+  border-top: 1px solid var(--acero-700);
+  background: var(--acero-900);
+}
+
+.destino {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-minimo);
+  font-family: var(--fuente-display);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--acero-300);
+  text-decoration: none;
+}
+
+.destino[aria-current="page"] {
+  color: var(--senal-azul);
+}

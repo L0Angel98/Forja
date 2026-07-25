@@ -22,10 +22,12 @@ export const esMX = {
     nivel3: "Alta",
     nivel4: "Crítica",
   },
+  // Valores calcados de EstadoFalla en @forja/core (packages/core/src/entities/falla.ts):
+  // abierto → en_revision → atendido → cerrado.
   estadoFalla: {
     abierto: "Abierta",
-    enProceso: "En proceso",
-    resuelto: "Resuelta",
+    enRevision: "En revisión",
+    atendido: "Atendida",
     cerrado: "Cerrada",
   },
   estadoMaquina: {
@@ -43,6 +45,7 @@ export const esMX = {
     placeholder: "Escribe un mensaje…",
     remitenteUsuario: "Tú",
     remitenteAgente: "Agente",
+    errorEnvio: "No se pudo obtener respuesta del agente. Tu mensaje se guardó — usa Reportar si es urgente.",
   },
   graficaSensor: {
     rango: "Rango",
@@ -60,6 +63,69 @@ export const esMX = {
     subiendo: "Subiendo…",
     quitar: "Quitar",
     fallo: "No se pudo subir. Tus datos siguen aquí",
+  },
+  auth: {
+    emailEtiqueta: "Correo",
+    contrasenaEtiqueta: "Contraseña",
+    entrar: "Entrar",
+    cerrarSesion: "Cerrar sesión",
+    credencialesInvalidas: "Correo o contraseña incorrectos",
+    demasiadosIntentos: "Demasiados intentos. Espera un momento y vuelve a intentar",
+    usuarioDesactivado: "Esta cuenta está desactivada",
+    errorGenerico: "No se pudo iniciar sesión",
+  },
+  nav: {
+    navegacionPrincipal: "Navegación principal",
+    chat: "Chat",
+    reportar: "Reportar",
+    misReportes: "Mis reportes",
+    bandeja: "Bandeja",
+    maquinas: "Máquinas",
+    documentos: "Documentos",
+    conectores: "Conectores",
+    rutinas: "Rutinas",
+    workspace: "Workspace",
+  },
+  reportar: {
+    titulo: "Reportar falla",
+    maquinaEtiqueta: "Tag de máquina",
+    maquinaAyuda: "El código de la torreta física, p. ej. PRE-03",
+    sintomaEtiqueta: "Síntoma",
+    descripcionEtiqueta: "Descripción",
+    descripcionAyuda: "¿Qué pasó?",
+    enviar: "Reportar falla",
+    exito: "Falla reportada",
+    sintomas: {
+      ruido_anormal: "Ruido anormal",
+      vibracion_excesiva: "Vibración excesiva",
+      fuga: "Fuga",
+      sobrecalentamiento: "Sobrecalentamiento",
+      no_enciende: "No enciende",
+      paro_total: "Paro total",
+      error_sensor: "Error de sensor",
+    },
+  },
+  misReportes: {
+    titulo: "Mis reportes",
+    vacioTitulo: "Sin reportes esta semana",
+    vacioDescripcion: "Cuando reportes una falla, aparecerá aquí.",
+  },
+  bandeja: {
+    titulo: "Bandeja de pendientes",
+    vacioTitulo: "Sin fallas pendientes",
+    vacioDescripcion: "Las fallas nuevas aparecerán aquí para su revisión.",
+    avanzarAEnRevision: "Poner en revisión",
+    avanzarAAtendido: "Marcar atendida",
+    avanzarACerrado: "Cerrar",
+  },
+  documentos: {
+    titulo: "Documentos",
+    vacioTitulo: "Sin documentos",
+    vacioDescripcion: "Los documentos que subas para consulta del agente aparecerán aquí.",
+  },
+  proximamente: {
+    titulo: "Próximamente",
+    descripcion: "Esta sección todavía no está disponible.",
   },
 } as const;
 

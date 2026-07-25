@@ -1,0 +1,45 @@
+.pagina {
+  padding: var(--espacio-24) var(--espacio-16);
+}
+
+.titulo {
+  margin: 0 0 var(--espacio-16);
+  font-size: var(--texto-xl);
+  font-weight: 600;
+  color: var(--acero-050);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reporte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-8);
+  padding: var(--espacio-16);
+  border-radius: var(--radio-tarjeta);
+  background: var(--acero-700);
+}
+
+.encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-12);
+}
+
+.tag {
+  color: var(--acero-050);
+}
+
+.descripcion {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--acero-300);
+}

@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Providers } from "./providers";
+import "@forja/ui/src/base.css";
 
 export const metadata = {
   title: "Forja",
@@ -8,7 +10,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es-MX">
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
