@@ -4,6 +4,7 @@ import { Boton, Campo, EstadoError, Select, Textarea, useI18n, type ContextoI18n
 import { useMutation } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { ErrorApi, solicitarApi } from "../lib/api";
+import { usarColaOffline } from "../lib/usar-cola-offline";
 import estilos from "./formulario-reportar-falla.module.css";
 
 const SINTOMAS = [
@@ -34,37 +35,47 @@ function mensajeErrorReporte(error: unknown, t: ContextoI18n["t"]): string {
 
 export function FormularioReportarFalla() {
   const { t } = useI18n();
+  const colaOffline = usarColaOffline();
   const [machineId, setMachineId] = useState("");
   const [sintoma, setSintoma] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [severidad, setSeveridad] = useState("1");
   const [enviado, setEnviado] = useState(false);
+  const [guardadoSinConexion, setGuardadoSinConexion] = useState(false);
 
   const mutacion = useMutation({
-    mutationFn: () =>
-      solicitarApi("/api/fallas", {
-        method: "POST",
-        body: JSON.stringify({
-          machineId,
-          sintomaTaxonomia: sintoma || undefined,
-          sintomaOtro: sintoma ? undefined : descripcion.slice(0, 500),
-          descripcion,
-          severidad: Number(severidad),
-        }),
-      }),
-    onSuccess: () => {
-      setEnviado(true);
-      setMachineId("");
-      setSintoma("");
-      setDescripcion("");
-      setSeveridad("1");
+    mutationFn: (payload: Record<string, unknown>) => solicitarApi("/api/fallas", { method: "POST", body: JSON.stringify(payload) }),
+    onSuccess: () => limpiar(false),
+    onError: async (error, payload) => {
+      // Sin conexión (fetch nunca llega a responder) ≠ el server rechazó la
+      // solicitud (ErrorApi con un código): solo lo primero se encola.
+      const sinRed = !(error instanceof ErrorApi);
+      if (sinRed || (typeof navigator !== "undefined" && !navigator.onLine)) {
+        await colaOffline.encolar(payload);
+        limpiar(true);
+      }
     },
   });
+
+  function limpiar(sinConexion: boolean): void {
+    setEnviado(true);
+    setGuardadoSinConexion(sinConexion);
+    setMachineId("");
+    setSintoma("");
+    setDescripcion("");
+    setSeveridad("1");
+  }
 
   function alEnviar(evento: FormEvent<HTMLFormElement>): void {
     evento.preventDefault();
     setEnviado(false);
-    mutacion.mutate();
+    mutacion.mutate({
+      machineId,
+      sintomaTaxonomia: sintoma || undefined,
+      sintomaOtro: sintoma ? undefined : descripcion.slice(0, 500),
+      descripcion,
+      severidad: Number(severidad),
+    });
   }
 
   return (
@@ -72,7 +83,13 @@ export function FormularioReportarFalla() {
       <h1 className={estilos.titulo}>{t("reportar.titulo")}</h1>
       {enviado ? (
         <p className={estilos.exito} role="status">
-          {t("reportar.exito")}
+          {guardadoSinConexion ? t("reportar.guardadoSinConexion") : t("reportar.exito")}
+        </p>
+      ) : null}
+      {colaOffline.pendientes.length > 0 ? (
+        <p className={estilos.exito} role="status">
+          {colaOffline.pendientes.length}{" "}
+          {t(colaOffline.pendientes.length === 1 ? "reportar.pendienteUno" : "reportar.pendienteVarios")}
         </p>
       ) : null}
       <form onSubmit={alEnviar} className={estilos.formulario}>
@@ -103,7 +120,9 @@ export function FormularioReportarFalla() {
           value={severidad}
           onChange={(evento) => setSeveridad(evento.target.value)}
         />
-        {mutacion.isError ? <EstadoError mensaje={mensajeErrorReporte(mutacion.error, t)} /> : null}
+        {mutacion.isError && mutacion.error instanceof ErrorApi ? (
+          <EstadoError mensaje={mensajeErrorReporte(mutacion.error, t)} />
+        ) : null}
         <Boton type="submit" cargando={mutacion.isPending}>
           {t("reportar.enviar")}
         </Boton>

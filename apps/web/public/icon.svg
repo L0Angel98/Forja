@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#14181D" />
+  <rect x="16" y="16" width="480" height="480" rx="80" fill="none" stroke="#2D6FD1" stroke-width="8" />
+  <text
+    x="256"
+    y="326"
+    text-anchor="middle"
+    font-family="'JetBrains Mono', ui-monospace, monospace"
+    font-size="280"
+    font-weight="700"
+    fill="#EEF2F6"
+  >F</text>
+</svg>

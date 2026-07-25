@@ -1,3 +1,5 @@
+import withSerwistInit from "@serwist/next";
+
 const ORIGEN_API = process.env.FORJA_API_ORIGIN ?? "http://localhost:3000";
 
 /** @type {import('next').NextConfig} */
@@ -14,4 +16,13 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+const withSerwist = withSerwistInit({
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+  // Deshabilitado en dev: un service worker cacheando durante desarrollo
+  // activo produce contenido obsoleto confuso; además @serwist/next no
+  // soporta `next dev --turbopack` (nuestro dev script usa webpack).
+  disable: process.env.NODE_ENV !== "production",
+});
+
+export default withSerwist(nextConfig);

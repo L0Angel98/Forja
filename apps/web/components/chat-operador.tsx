@@ -4,6 +4,7 @@ import { Chat, EstadoError, useI18n, type MensajeChat } from "@forja/ui";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { solicitarApi } from "../lib/api";
+import { usarEnLinea } from "../lib/usar-en-linea";
 
 interface RespuestaChat {
   readonly respuesta: string;
@@ -25,6 +26,7 @@ interface MensajeHistorial {
  */
 export function ChatOperador() {
   const { t } = useI18n();
+  const enLinea = usarEnLinea();
   const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
   const contadorRef = useRef(0);
 
@@ -60,8 +62,11 @@ export function ChatOperador() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {mutacion.isError ? <EstadoError mensaje={t("chat.errorEnvio")} onReintentar={() => mutacion.reset()} /> : null}
-      <Chat mensajes={mensajes} onEnviar={alEnviar} deshabilitado={mutacion.isPending} />
+      {!enLinea ? <EstadoError mensaje={t("chat.sinConexion")} /> : null}
+      {enLinea && mutacion.isError ? (
+        <EstadoError mensaje={t("chat.errorEnvio")} onReintentar={() => mutacion.reset()} />
+      ) : null}
+      <Chat mensajes={mensajes} onEnviar={alEnviar} deshabilitado={!enLinea || mutacion.isPending} />
     </div>
   );
 }

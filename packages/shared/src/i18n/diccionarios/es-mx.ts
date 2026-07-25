@@ -46,6 +46,7 @@ export const esMX = {
     remitenteUsuario: "Tú",
     remitenteAgente: "Agente",
     errorEnvio: "No se pudo obtener respuesta del agente. Tu mensaje se guardó — usa Reportar si es urgente.",
+    sinConexion: "El chat no funciona sin conexión. Usa Reportar si es urgente.",
   },
   graficaSensor: {
     rango: "Rango",
@@ -95,6 +96,9 @@ export const esMX = {
     descripcionAyuda: "¿Qué pasó?",
     enviar: "Reportar falla",
     exito: "Falla reportada",
+    guardadoSinConexion: "Sin conexión: tu reporte se guardó y se enviará solo al reconectar.",
+    pendienteUno: "reporte pendiente de enviar",
+    pendienteVarios: "reportes pendientes de enviar",
     sintomas: {
       ruido_anormal: "Ruido anormal",
       vibracion_excesiva: "Vibración excesiva",

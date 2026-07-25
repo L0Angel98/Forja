@@ -4,6 +4,8 @@ dist/
 .turbo/
 coverage/
 storybook-static/
+apps/web/public/sw.js
+apps/web/public/sw.js.map
 *.tsbuildinfo
 *.log
 .env
