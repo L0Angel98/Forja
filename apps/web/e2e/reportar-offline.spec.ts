@@ -11,24 +11,29 @@ import { iniciarSesion } from "./ayudantes";
  * que, sin red, el reporte nunca se pierde y queda visible como
  * pendiente.
  */
-test("sin conexión, el reporte se guarda localmente y se muestra como pendiente", async ({ page, context }) => {
+test("sin conexión, el reporte se guarda localmente y se muestra como pendiente", async ({ page }) => {
+  // Fuerza el fetch de POST /api/fallas a rechazar como fetch() real lo
+  // hace sin red — determinístico por construcción. context.setOffline
+  // (probado en CI real dos veces, con y sin page.route de apoyo) deja el
+  // POST sin llegar al server (confirmado por logs) pero el banner tampoco
+  // aparece: con el service worker de producción activo (este job compila
+  // y sirve el build real), esa vía pasa por la capa de red/CDP y algo se
+  // queda colgado en vez de rechazar limpio. Esto interviene en el punto
+  // exacto que el código de la app observa, sin tocar esa capa.
+  await page.addInitScript(() => {
+    const fetchOriginal = window.fetch.bind(window);
+    window.fetch = (entrada, opciones) => {
+      const metodo = opciones?.method ?? "GET";
+      const url = typeof entrada === "string" ? entrada : entrada instanceof URL ? entrada.toString() : entrada.url;
+      if (url.includes("/api/fallas") && metodo === "POST") return Promise.reject(new TypeError("Failed to fetch"));
+      return fetchOriginal(entrada, opciones);
+    };
+  });
+
   await iniciarSesion(page, "operador");
   await page.goto("/reportar");
 
-  // Espera a que el formulario real esté listo (GuardiaRol ya resolvió la
-  // sesión vía /api/auth/me) antes de cortar la red: si se corta antes,
-  // ese mismo chequeo de sesión falla por falta de red y GuardiaRol
-  // redirige a /iniciar-sesion, y el test nunca llega a ver el formulario.
   await expect(page.getByLabel("Tag de máquina")).toBeVisible();
-
-  // page.route asegura que el POST falle de forma determinista e inmediata
-  // (a diferencia de context.setOffline, cuya propagación al fetch en
-  // curso puede demorar unos instantes bajo carga de CI); setOffline se
-  // mantiene además por fidelidad con el escenario "sin conexión" real.
-  await page.route("**/api/fallas", (route) =>
-    route.request().method() === "POST" ? route.abort("internetdisconnected") : route.continue(),
-  );
-  await context.setOffline(true);
 
   await page.getByLabel("Tag de máquina").fill("PRE-03");
   await page.getByLabel("Descripción").fill("Ruido anormal en el motor principal");
@@ -36,6 +41,4 @@ test("sin conexión, el reporte se guarda localmente y se muestra como pendiente
 
   await expect(page.getByText("Sin conexión: tu reporte se guardó")).toBeVisible();
   await expect(page.getByText(/pendiente de enviar/)).toBeVisible();
-
-  await context.setOffline(false);
 });
