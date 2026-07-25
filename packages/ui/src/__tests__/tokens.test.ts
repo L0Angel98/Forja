@@ -23,6 +23,7 @@ describe("tokens.css coincide con tokens.ts", () => {
     ["andon-naranja", colores.andonNaranja],
     ["andon-rojo", colores.andonRojo],
     ["senal-azul", colores.senalAzul],
+    ["senal-azul-claro", colores.senalAzulClaro],
   ])("--%s", (nombreVariable, valorEsperado) => {
     expect(valorVariableCss(nombreVariable)?.toLowerCase()).toBe(valorEsperado.toLowerCase());
   });

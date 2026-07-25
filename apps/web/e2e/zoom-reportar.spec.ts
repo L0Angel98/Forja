@@ -14,13 +14,17 @@ test("con el viewport reducido (≈200% zoom), el formulario de reportar no gene
   await iniciarSesion(page, "operador");
   await page.goto("/reportar");
 
+  // Espera al formulario real (no al Skeleton de carga de GuardiaRol)
+  // antes de medir: medir demasiado pronto mide el layout equivocado y,
+  // bajo la carga de los 2 workers de CI compartiendo un solo server, el
+  // chequeo de sesión puede tardar más que el auto-wait por defecto.
+  await expect(page.getByLabel("Tag de máquina")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reportar falla" })).toBeVisible();
+
   const [anchoDocumento, anchoViewport] = await page.evaluate(() => [
     document.documentElement.scrollWidth,
     document.documentElement.clientWidth,
   ]);
 
   expect(anchoDocumento).toBeLessThanOrEqual(anchoViewport);
-
-  await expect(page.getByLabel("Tag de máquina")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Reportar falla" })).toBeVisible();
 });

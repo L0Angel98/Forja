@@ -15,6 +15,19 @@ test("sin conexión, el reporte se guarda localmente y se muestra como pendiente
   await iniciarSesion(page, "operador");
   await page.goto("/reportar");
 
+  // Espera a que el formulario real esté listo (GuardiaRol ya resolvió la
+  // sesión vía /api/auth/me) antes de cortar la red: si se corta antes,
+  // ese mismo chequeo de sesión falla por falta de red y GuardiaRol
+  // redirige a /iniciar-sesion, y el test nunca llega a ver el formulario.
+  await expect(page.getByLabel("Tag de máquina")).toBeVisible();
+
+  // page.route asegura que el POST falle de forma determinista e inmediata
+  // (a diferencia de context.setOffline, cuya propagación al fetch en
+  // curso puede demorar unos instantes bajo carga de CI); setOffline se
+  // mantiene además por fidelidad con el escenario "sin conexión" real.
+  await page.route("**/api/fallas", (route) =>
+    route.request().method() === "POST" ? route.abort("internetdisconnected") : route.continue(),
+  );
   await context.setOffline(true);
 
   await page.getByLabel("Tag de máquina").fill("PRE-03");

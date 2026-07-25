@@ -22,7 +22,21 @@ export const colores = {
    */
   andonNaranja: "#D9631E",
   andonRojo: "#D0342C",
-  senalAzul: "#2D6FD1",
+  /**
+   * La spec da `#2D6FD1` literal para señal azul, pero ese valor exacto
+   * mide 4.33:1 contra acero-050 (Boton primario, burbuja de usuario en
+   * Chat) — no llega al 4.5:1 que la misma spec exige como no negociable.
+   * Se oscurece ligeramente (mismo tono, -3% de luminosidad) hasta 4.5:1+
+   * real: la regla de contraste gana sobre el swatch literal.
+   */
+  senalAzul: "#2A68C4",
+  /**
+   * Variante clara del mismo tono, solo para texto/ícono de señal azul
+   * sobre fondo oscuro (acero-900) — p. ej. el destino activo del nav
+   * inferior. `senalAzul` (pensado para fondo claro) mide 3.65:1 ahí; esta
+   * variante mide 4.75:1+.
+   */
+  senalAzulClaro: "#4C84D8",
 } as const;
 
 export const tipografia = {
