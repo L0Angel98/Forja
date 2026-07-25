@@ -39,6 +39,11 @@ export const esMX = {
     errorTitulo: "No se pudo cargar",
     errorAccion: "Reintentar",
   },
+  chat: {
+    placeholder: "Escribe un mensaje…",
+    remitenteUsuario: "Tú",
+    remitenteAgente: "Agente",
+  },
 } as const;
 
 export type DiccionarioEsMX = typeof esMX;

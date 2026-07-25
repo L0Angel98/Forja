@@ -14,3 +14,4 @@ export * from "./componentes/EstadoVacio";
 export * from "./componentes/EstadoError";
 export * from "./componentes/Skeleton";
 export * from "./componentes/TarjetaConfirmacion";
+export * from "./componentes/Chat";

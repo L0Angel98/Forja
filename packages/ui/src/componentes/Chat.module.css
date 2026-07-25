@@ -1,0 +1,132 @@
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-24);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--espacio-16);
+  list-style: none;
+}
+
+.fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+  max-width: 85%;
+}
+
+.filaUsuario {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.filaAgente {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.remitente {
+  font-size: var(--texto-xs);
+  color: var(--acero-300);
+}
+
+.burbuja {
+  border-radius: var(--radio-tarjeta);
+  padding: var(--espacio-12) var(--espacio-16);
+}
+
+.burbujaUsuario {
+  background: var(--senal-azul);
+  color: var(--acero-050);
+}
+
+.burbujaAgente {
+  background: var(--acero-700);
+  color: var(--acero-050);
+}
+
+.texto {
+  margin: 0;
+  font-size: var(--texto-operador);
+  line-height: var(--interlinea-cuerpo);
+  white-space: pre-wrap;
+}
+
+/* Región de anuncio incremental: solo lectores de pantalla. El texto
+   visible en .texto se actualiza en cada token sin aria-live (no debe
+   reanunciarse completo); esta región solo recibe el fragmento nuevo. */
+.soloLector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.citas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-12);
+  margin: var(--espacio-8) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chipCita {
+  min-height: 44px;
+  padding: 0 var(--espacio-12);
+  border: 1px solid var(--acero-300);
+  border-radius: var(--radio-control);
+  background: transparent;
+  color: var(--acero-050);
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xs);
+  cursor: pointer;
+}
+
+.herramienta {
+  margin: 0;
+  padding: 0 var(--espacio-16) var(--espacio-8);
+  font-size: var(--texto-sm);
+  font-style: italic;
+  color: var(--acero-300);
+}
+
+.compositor {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espacio-8);
+  padding: var(--espacio-16);
+  border-top: 1px solid var(--acero-700);
+}
+
+.entrada {
+  flex: 1;
+  min-height: var(--touch-target-minimo);
+  padding: var(--espacio-12) var(--espacio-16);
+  border: 1px solid var(--acero-300);
+  border-radius: var(--radio-control);
+  background: var(--acero-700);
+  color: var(--acero-050);
+  font-family: var(--fuente-display);
+  font-size: var(--texto-operador);
+  resize: none;
+}
+
+.entrada:focus-visible {
+  outline: 2px solid var(--senal-azul);
+  outline-offset: 2px;
+}
