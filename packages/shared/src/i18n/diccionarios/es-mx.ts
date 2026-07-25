@@ -44,6 +44,23 @@ export const esMX = {
     remitenteUsuario: "Tú",
     remitenteAgente: "Agente",
   },
+  graficaSensor: {
+    rango: "Rango",
+    rango24h: "24 h",
+    rango7d: "7 d",
+    rango30d: "30 d",
+  },
+  tablaDatos: {
+    buscar: "Buscar",
+    sinResultados: "Sin resultados para este filtro",
+  },
+  subidaArchivo: {
+    tomarFoto: "Tomar foto",
+    elegirArchivo: "Elegir archivo",
+    subiendo: "Subiendo…",
+    quitar: "Quitar",
+    fallo: "No se pudo subir. Tus datos siguen aquí",
+  },
 } as const;
 
 export type DiccionarioEsMX = typeof esMX;

@@ -1,0 +1,42 @@
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-12);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-12);
+}
+
+.entradaOculta {
+  display: none;
+}
+
+.estadoArchivo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-8);
+  background: var(--acero-700);
+  border-radius: var(--radio-tarjeta);
+  padding: var(--espacio-16);
+}
+
+.nombre {
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-sm);
+  color: var(--acero-050);
+  word-break: break-all;
+}
+
+.progreso {
+  width: 100%;
+  accent-color: var(--senal-azul);
+}
+
+.mensajeError {
+  font-size: var(--texto-sm);
+  color: var(--andon-rojo);
+}

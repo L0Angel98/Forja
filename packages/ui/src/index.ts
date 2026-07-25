@@ -15,3 +15,6 @@ export * from "./componentes/EstadoError";
 export * from "./componentes/Skeleton";
 export * from "./componentes/TarjetaConfirmacion";
 export * from "./componentes/Chat";
+export * from "./componentes/GraficaSensor";
+export * from "./componentes/TablaDatos";
+export * from "./componentes/SubidaArchivo";

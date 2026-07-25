@@ -1,0 +1,53 @@
+.tabla {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-12);
+}
+
+.viewport {
+  overflow-y: auto;
+  border: 1px solid var(--acero-700);
+  border-radius: var(--radio-tarjeta);
+}
+
+.grilla {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.filaEncabezado {
+  display: flex;
+  background: var(--acero-700);
+  position: sticky;
+  top: 0;
+}
+
+.celdaEncabezado {
+  flex: 1;
+  padding: var(--espacio-8) var(--espacio-12);
+  text-align: left;
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  color: var(--acero-300);
+}
+
+.fila {
+  border-bottom: 1px solid var(--acero-700);
+}
+
+.celda {
+  flex: 1;
+  padding: var(--espacio-8) var(--espacio-12);
+  font-size: var(--texto-sm);
+  color: var(--acero-050);
+  display: flex;
+  align-items: center;
+}
+
+.sinResultados {
+  margin: 0;
+  padding: var(--espacio-24) var(--espacio-16);
+  font-size: var(--texto-sm);
+  color: var(--acero-300);
+}
